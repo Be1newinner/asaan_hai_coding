@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Youtube, Github, Linkedin, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { contacts, youtube_headline } from "@/constants/about";
 
 export default function AboutPage() {
   const skills = [
@@ -38,7 +39,7 @@ export default function AboutPage() {
 
             <div className="flex justify-center space-x-4 mb-6">
               <Link
-                href="https://www.youtube.com/@asaan_hai_coding"
+                href={contacts.youtube}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-red-500 transition-colors"
@@ -47,7 +48,7 @@ export default function AboutPage() {
                 <Youtube className="h-6 w-6" />
               </Link>
               <Link
-                href="https://github.com/be1newinner"
+                href={contacts.github}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
@@ -56,7 +57,7 @@ export default function AboutPage() {
                 <Github className="h-6 w-6" />
               </Link>
               <Link
-                href="https://www.linkedin.com/in/be1newinner/"
+                href={contacts.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-blue-500 transition-colors"
@@ -71,11 +72,11 @@ export default function AboutPage() {
             <h1 className="text-3xl md:text-4xl font-bold mb-4">About Me</h1>
 
             <p className="text-gray-300 mb-4">
-              Hi, I'm Vijay! I'm a full-stack developer with a passion for
+              Hi, I'm Vijay! I&apos;m a full-stack developer with a passion for
               building clean, efficient, and user-friendly web applications.
-              With over 2 and a half years of experience in the industry, I've
-              worked on a wide range of projects from small startups to large
-              enterprise applications.
+              With over 5 years of experience in the industry, I've worked on a
+              wide range of projects from small startups to large enterprise
+              applications.
             </p>
 
             <p className="text-gray-300 mb-6">
@@ -86,10 +87,10 @@ export default function AboutPage() {
               for everyone.
             </p>
 
-            <Link href="mailto:be1newinner@gmail.com" className="bg-purple-600 hover:bg-purple-700 mb-8">
+            <Button className="bg-purple-600 hover:bg-purple-700 mb-8">
               <Mail className="mr-2 h-4 w-4" />
               Let's Collaborate
-            </Link>
+            </Button>
 
             <h2 className="text-xl font-bold mb-3">Skills & Technologies</h2>
             <div className="flex flex-wrap gap-2 mb-8">
@@ -123,9 +124,9 @@ export default function AboutPage() {
             </p>
 
             <p className="text-gray-300">
-              Whether you're just starting your coding journey or you're an
-              experienced developer looking to expand your skills, Asaan Hai
-              Coding has something for you.
+              Whether you&apos;re just starting your coding journey or
+              you&apos;re an experienced developer looking to expand your
+              skills, Asaan Hai Coding has something for you.
             </p>
           </div>
         </section>
@@ -137,7 +138,7 @@ export default function AboutPage() {
             <div className="aspect-video w-full mb-6">
               <iframe
                 className="w-full h-full rounded-lg"
-                src="https://www.youtube.com/embed/j7Oce-LjSk4?si=fj4T9TlJN6shlftN"
+                src={youtube_headline}
                 title="YouTube video player"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -151,7 +152,7 @@ export default function AboutPage() {
               </p>
 
               <Link
-                href="https://www.youtube.com/@asaan_hai_coding"
+                href={contacts.youtube}
                 target="_blank"
                 rel="noopener noreferrer"
               >
