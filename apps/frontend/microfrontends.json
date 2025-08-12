@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/microfrontends.json",
+  "applications": {
+    "asaan-hai-coding-client-frontend": {
+      "development": {
+        "fallback": "www.asaanhaicoding.in"
+      }
+    }
+  }
+}
