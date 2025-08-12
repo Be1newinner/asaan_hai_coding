@@ -21,7 +21,6 @@ export default function ContactSection() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate form submission
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     toast({

@@ -36,7 +36,6 @@
   }
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -53,7 +52,6 @@
   @apply bg-slate-600;
 }
 
-/* Smooth animations */
 * {
   transition: all 0.2s ease-in-out;
 }
