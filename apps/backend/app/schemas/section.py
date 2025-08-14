@@ -1,0 +1,25 @@
+from typing import List
+from pydantic import BaseModel, Field
+from app.schemas.base import ORMBase
+from app.schemas.lesson import LessonRead
+
+
+# ─── WRITE ──────────────────────────────────────────
+class SectionCreate(BaseModel):
+    course_id: int
+    title: str = Field(..., max_length=255)
+    section_order: int = Field(..., ge=1)
+
+
+class SectionUpdate(BaseModel):
+    title: str | None = Field(None, max_length=255)
+    section_order: int | None = Field(None, ge=1)
+
+
+# ─── READ ────────────────────────────────────────────
+class SectionRead(ORMBase):
+    section_id: int
+    course_id: int
+    title: str
+    section_order: int
+    lessons: List[LessonRead] = []
