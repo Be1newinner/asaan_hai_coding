@@ -1,11 +1,11 @@
-from uuid import UUID
 from pydantic import EmailStr, Field
 from app.schemas.base import ORMBase, TimestampMixin
+from uuid import UUID, uuid4
 
 
 # ─── READ ──────────────────────────────────────────
 class UserRead(ORMBase, TimestampMixin):
-    user_id: UUID
+    id: UUID
     username: str
     email: EmailStr
     full_name: str

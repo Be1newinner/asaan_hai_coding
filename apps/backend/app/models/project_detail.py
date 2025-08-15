@@ -11,7 +11,7 @@ class ProjectDetail(BaseModel):
     __tablename__ = "project_details"
 
     id: Mapped[int] = mapped_column(
-        ForeignKey("projects.project_id", ondelete="CASCADE"), primary_key=True
+        ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True
     )
     markdown_content: Mapped[str] = mapped_column(Text, nullable=False)
 

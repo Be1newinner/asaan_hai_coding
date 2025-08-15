@@ -2,11 +2,11 @@ from typing import List
 from pydantic import BaseModel, Field
 from app.schemas.base import ORMBase
 from app.schemas.lesson import LessonRead
-
+from uuid import UUID
 
 # ─── WRITE ──────────────────────────────────────────
 class SectionCreate(BaseModel):
-    course_id: int
+    course_id: UUID
     title: str = Field(..., max_length=255)
     section_order: int = Field(..., ge=1)
 

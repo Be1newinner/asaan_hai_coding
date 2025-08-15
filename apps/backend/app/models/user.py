@@ -1,9 +1,9 @@
 from app.db.base import BaseModel
 from enum import Enum
 from uuid import UUID, uuid4
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy import String, TIMESTAMP
 from datetime import datetime, timezone
 
@@ -30,7 +30,7 @@ class User(BaseModel):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     contact: Mapped[str | None] = mapped_column(String(20))
-    gender: Mapped[UserGender]
+    gender: Mapped[UserGender | None]
     role: Mapped[UserRole] = mapped_column(default=UserRole.USER, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(

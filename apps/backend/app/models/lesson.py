@@ -13,7 +13,7 @@ class Lesson(BaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     section_id: Mapped[int] = mapped_column(
-        ForeignKey("sections.section_id", ondelete="CASCADE")
+        ForeignKey("sections.id", ondelete="CASCADE")
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     content: Mapped[str | None] = mapped_column(Text)

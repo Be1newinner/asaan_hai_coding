@@ -13,7 +13,7 @@ class Section(BaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     course_id: Mapped[int] = mapped_column(
-        ForeignKey("courses.course_id", ondelete="CASCADE")
+        ForeignKey("courses.id", ondelete="CASCADE")
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     section_order: Mapped[int] = mapped_column(Integer, nullable=False)

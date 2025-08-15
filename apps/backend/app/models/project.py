@@ -2,11 +2,11 @@ from app.db.base import BaseModel
 from sqlalchemy import String, Text, Boolean, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, timezone
+from app.models.project_detail import ProjectDetail
 
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from app.models.project_detail import ProjectDetail
+# if TYPE_CHECKING:
 
 
 class Project(BaseModel):

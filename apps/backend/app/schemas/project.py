@@ -46,7 +46,7 @@ class ProjectUpdate(BaseModel):
 
 
 class ProjectRead(ORMBase, TimestampMixin):
-    project_id: int
+    id: int
     title: str
     description: str | None
     client_name: str | None
