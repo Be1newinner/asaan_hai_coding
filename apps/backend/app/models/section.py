@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 class Section(BaseModel):
     __tablename__ = "sections"
 
-    section_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     course_id: Mapped[int] = mapped_column(
         ForeignKey("courses.course_id", ondelete="CASCADE")
     )
