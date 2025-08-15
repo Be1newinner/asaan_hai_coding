@@ -1,4 +1,15 @@
-from typing import TypeVar, Generic, Type, List, Optional, Protocol, cast, Final, Any
+from typing import (
+    TypeVar,
+    Generic,
+    Type,
+    List,
+    Optional,
+    Protocol,
+    cast,
+    Final,
+    Any,
+    Sequence,
+)
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -19,6 +30,17 @@ UpdateT = TypeVar("UpdateT", bound=BaseModel)
 class CRUDBase(Generic[ModelT, CreateT, UpdateT]):
     def __init__(self, model: Type[ModelT]):
         self.model = model
+
+    async def list(
+        self,
+        db: AsyncSession,
+        *,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> Sequence[ModelT]:
+        stmt = select(self.model).offset(skip).limit(limit)
+        result = await db.execute(stmt)
+        return result.scalars().all()
 
     async def get(self, db: AsyncSession, obj_id: int | UUID) -> Optional[ModelT]:
         stmt = select(self.model).where(
@@ -41,7 +63,7 @@ class CRUDBase(Generic[ModelT, CreateT, UpdateT]):
         await db.refresh(db_obj)
         return db_obj
 
-    async def delete(self, db: AsyncSession, obj_id: int) -> None:
+    async def delete(self, db: AsyncSession, obj_id: int | UUID) -> None:
         obj = await self.get(db, obj_id)
         if obj:
             await db.delete(obj)

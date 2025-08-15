@@ -1,14 +1,37 @@
-from app.core.security import (
-    get_password_hash,
-    verify_password,
-    create_access_token,
-    decode_access_token,
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from typing import cast
+
+from app.api import all_apis
+from app.core.config import settings
+from app.db.init_db import init_db
+from contextlib import asynccontextmanager
+
+
+# ─── Lifespan handler ────────────────────────────────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+
+    yield
+
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version="1.0.0",
+    docs_url="/",
+    lifespan=lifespan,
 )
 
-# hashed = "$2b$12$p884VDsG9UrKLgKi2cDC2OECVNbyrvhWSdz/KbrZACBnnSZWZVle2"
+# ─── CORS ─────────────────────────────────────────────────────────
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cast(str, settings.BACKEND_CORS_ORIGINS or ["*"]),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# print(get_password_hash("PASSWORD"))
-# print(verify_password("PASSWORd", hashed))
-
-# print(create_access_token({"sub": "the_abc_id"}))
-# print(decode_access_token("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0aGVfYWJjX2lkIiwiZXhwIjoxNzU1MDY4MDg3LCJpYXQiOjE3NTUwNjQ0ODcsImlzcyI6ImFoYy1iYWNrZW5kIiwiYXVkIjoiYWhjLWFkbWluIn0.XAWcOWO2hi3KFejqKVqRPRWqnzwWz-OWTg8ZSFlARMI"))
+# ─── Include routers ─────────────────────────────────────────────
+for r in all_apis:
+    app.include_router(r)
