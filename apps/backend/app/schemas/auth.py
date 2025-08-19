@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from uuid import UUID
 
 
 class AuthLoginIn(BaseModel):
@@ -7,7 +8,7 @@ class AuthLoginIn(BaseModel):
 
 
 class TokenPayload(BaseModel):
-    sub: str
+    sub: UUID
     username: str
     role: str
     iss: str

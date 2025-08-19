@@ -1,8 +1,9 @@
 from app.core.config import get_settings
 from bcrypt import gensalt, hashpw, checkpw
 from typing import Union, Optional
-from authlib.jose import JsonWebToken, errors
+from authlib.jose import JsonWebToken, errors, JWTClaims
 from datetime import timedelta, datetime, timezone
+from app.schemas.auth import TokenPayload
 
 settings = get_settings()
 
@@ -49,7 +50,7 @@ def create_access_token(data: dict, expire_delta: Optional[timedelta] = None) ->
     return token.decode("utf-8")
 
 
-def decode_access_token(token: str) -> Optional[dict]:
+def decode_access_token(token: str) -> Optional[JWTClaims]:
     try:
         return jwt.decode(s=token, key=settings.SECRET_KEY)
     except errors.DecodeError:

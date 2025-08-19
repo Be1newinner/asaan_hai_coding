@@ -24,7 +24,7 @@ class CourseUpdate(BaseModel):
 
 # ─── READ (nested) ─────────────────────────────────
 class CourseRead(ORMBase, TimestampMixin):
-    course_id: int
+    id: UUID
     title: str
     description: str | None
     instructor_id: UUID | None

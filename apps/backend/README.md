@@ -31,7 +31,7 @@ _Purpose: The main catalog of all courses on the platform._
 
 ```sql
 CREATE TABLE courses (
-    course_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT,
     instructor_id INT REFERENCES users(user_id) ON DELETE SET NULL,
@@ -51,7 +51,7 @@ _Purpose: Organizes courses into logical modules or units._
 ```sql
 CREATE TABLE sections (
     section_id SERIAL PRIMARY KEY,
-    course_id INT REFERENCES courses(course_id) ON DELETE CASCADE,
+    course_id INT REFERENCES courses(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     section_order INT NOT NULL,
     UNIQUE (course_id, section_order)

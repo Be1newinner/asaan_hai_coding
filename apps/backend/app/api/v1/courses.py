@@ -3,9 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.course import CourseCreate, CourseUpdate, CourseRead
 from app.crud import course_crud
-from app.api.deps import get_current_admin, require_role
+from app.api.deps import get_current_admin
 from app.db.session import get_async_session
 from uuid import UUID
+
+from typing import List
 
 router = APIRouter(prefix="/courses", tags=["courses"])
 
@@ -30,6 +32,16 @@ async def create_course(
     db: AsyncSession = Depends(get_async_session),
 ):
     return await course_crud.create(db, data)
+
+
+@router.post(
+    "/bulk", response_model=List[CourseRead], dependencies=[Depends(get_current_admin)]
+)
+async def create_courses_bulk(
+    data: List[CourseCreate],
+    db: AsyncSession = Depends(get_async_session),
+):
+    return await course_crud.create_bulk(db, data)
 
 
 @router.put(

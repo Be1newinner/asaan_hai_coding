@@ -18,7 +18,7 @@ class LessonUpdate(BaseModel):
 
 # ─── READ ───────────────────────────────────────────
 class LessonRead(ORMBase):
-    lesson_id: int
+    id: int
     section_id: int
     title: str
     content: str | None

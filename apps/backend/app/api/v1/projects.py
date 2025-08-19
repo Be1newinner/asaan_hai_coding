@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
 
 from app.schemas.project import (
     ProjectCreate,
@@ -40,6 +41,15 @@ async def create_project(
     data: ProjectCreate, db: AsyncSession = Depends(get_async_session)
 ):
     return await project_crud.create(db, data)
+
+
+@router.post(
+    "/bulk", response_model=List[ProjectRead], dependencies=[Depends(get_current_admin)]
+)
+async def create_projects_bulk(
+    data_list: List[ProjectCreate], db: AsyncSession = Depends(get_async_session)
+):
+    return await project_crud.create_bulk(db, data_list)
 
 
 @router.put(

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
 
 from app.schemas.section import (
     SectionCreate,
@@ -10,13 +11,15 @@ from app.crud import section_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
 
+from typing import List
+
 router = APIRouter(prefix="/sections", tags=["sections"])
 
 
 # ─── Public / shared endpoints ───────────────────────────────────
 @router.get("", response_model=list[SectionRead])
 async def list_sections(
-    course_id: int = Query(..., description="Filter by parent course"),
+    course_id: UUID = Query(..., description="Filter by parent course"),
     db: AsyncSession = Depends(get_async_session),
 ):
     if course_id is None:
@@ -43,6 +46,17 @@ async def create_section(
     data: SectionCreate, db: AsyncSession = Depends(get_async_session)
 ):
     return await section_crud.create(db, data)
+
+
+@router.post(
+    "/bulk",
+    response_model=List[SectionRead],
+    dependencies=[Depends(get_current_admin)],
+)
+async def create_sections_bulk(
+    data: List[SectionCreate], db: AsyncSession = Depends(get_async_session)
+):
+    return await section_crud.create_bulk(db, data)
 
 
 @router.put(

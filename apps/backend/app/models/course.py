@@ -18,8 +18,9 @@ if TYPE_CHECKING:
 class Course(BaseModel):
     __tablename__ = "courses"
 
-    id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4
-)
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid4
+    )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     instructor_id: Mapped[UUID | None] = mapped_column(
@@ -38,5 +39,7 @@ class Course(BaseModel):
 
     # relations
     sections: Mapped[list["Section"]] = relationship(
-        back_populates="course", cascade="all, delete-orphan"
+        back_populates="course",
+        cascade="all, delete-orphan",
+        lazy="selectin",
     )

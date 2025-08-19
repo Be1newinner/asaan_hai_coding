@@ -6,6 +6,8 @@ from app.crud import lesson_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
 
+from typing import List
+
 router = APIRouter(prefix="/lessons", tags=["lessons"])
 
 
@@ -40,6 +42,17 @@ async def create_lesson(
     data: LessonCreate, db: AsyncSession = Depends(get_async_session)
 ):
     return await lesson_crud.create(db, data)
+
+
+@router.post(
+    "/bulk",
+    response_model=List[LessonRead],
+    dependencies=[Depends(get_current_admin)],
+)
+async def create_lessons_bulk(
+    data_list: List[LessonCreate], db: AsyncSession = Depends(get_async_session)
+):
+    return await lesson_crud.create_bulk(db, data_list)
 
 
 @router.put(

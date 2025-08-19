@@ -18,8 +18,8 @@ class SectionUpdate(BaseModel):
 
 # ─── READ ────────────────────────────────────────────
 class SectionRead(ORMBase):
-    section_id: int
-    course_id: int
+    id: int
+    course_id: UUID
     title: str
     section_order: int
     lessons: List[LessonRead] = []
