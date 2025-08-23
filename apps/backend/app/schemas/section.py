@@ -1,7 +1,7 @@
 from typing import List
 from pydantic import BaseModel, Field
 from app.schemas.base import ORMBase
-from app.schemas.lesson import LessonRead
+from app.schemas.lesson import LessonReadBase
 from uuid import UUID
 
 
@@ -26,4 +26,4 @@ class SectionReadBase(ORMBase):
 
 
 class SectionRead(SectionReadBase):
-    lessons: List[LessonRead] = []
+    lessons: List[LessonReadBase] = []

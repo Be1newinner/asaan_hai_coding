@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.lesson import LessonCreate, LessonUpdate, LessonRead, LessonReadBase
-from app.crud import lesson_crud
+from app.services import lesson_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
 

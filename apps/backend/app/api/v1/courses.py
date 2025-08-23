@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 from app.schemas.course import CourseCreate, CourseUpdate, CourseRead, CourseReadBase
-from app.crud import course_crud
+from app.services import course_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
 from uuid import UUID

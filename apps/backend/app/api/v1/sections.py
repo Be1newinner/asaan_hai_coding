@@ -8,7 +8,7 @@ from app.schemas.section import (
     SectionRead,
     SectionReadBase,
 )
-from app.crud import section_crud
+from app.services import section_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
 

@@ -10,7 +10,7 @@ from app.schemas.project import (
     ProjectDetailUpdate,
     ProjectDetailRead,
 )
-from app.crud import project_crud, project_detail_crud
+from app.services import project_crud, project_detail_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
 

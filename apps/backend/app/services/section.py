@@ -1,4 +1,4 @@
-from app.crud.base import CRUDBase
+from app.services.base import CRUDBase
 from app.models.section import Section
 from app.schemas.section import SectionCreate, SectionUpdate
 from sqlalchemy.ext.asyncio import AsyncSession

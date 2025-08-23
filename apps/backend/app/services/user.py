@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud.base import CRUDBase
+from app.services.base import CRUDBase
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdateByAdmin, UserUpdate
 

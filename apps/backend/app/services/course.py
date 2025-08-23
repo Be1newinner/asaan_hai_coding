@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Load, selectinload
 
-from app.crud.base import CRUDBase
+from app.services.base import CRUDBase
 from app.models.course import Course
 from app.models.section import Section
 from app.schemas.course import CourseCreate, CourseUpdate

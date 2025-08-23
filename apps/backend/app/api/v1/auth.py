@@ -14,7 +14,7 @@ from app.core.security import (
 from app.db.session import get_async_session
 from app.models.user import User
 
-from app.crud.user import user_crud
+from app.services.user import user_crud
 from app.api.deps import extract_token
 
 from app.core.config import settings

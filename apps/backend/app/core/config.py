@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 21
     ALGORITHM: str = "HS256"
+    GEMINI_ENDPOINT_TEMPLATE: str | None = None
 
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 

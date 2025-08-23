@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.schemas.user import UserCreate, UserUpdate, UserRead
-from app.crud import user_crud
+from app.services import user_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
 
