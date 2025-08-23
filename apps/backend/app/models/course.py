@@ -41,5 +41,5 @@ class Course(BaseModel):
     sections: Mapped[list["Section"]] = relationship(
         back_populates="course",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        lazy="select",
     )

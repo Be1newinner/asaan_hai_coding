@@ -9,15 +9,18 @@ from typing import (
     Final,
     Any,
     Sequence,
+    Iterable,
 )
 from uuid import UUID
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, Load
 from sqlalchemy.sql import ColumnElement
 from fastapi import HTTPException, status
+
+from pydantic import BaseModel
 
 
 class HasId(Protocol):
@@ -44,10 +47,20 @@ class CRUDBase(Generic[ModelT, CreateT, UpdateT]):
         result = await db.execute(stmt)
         return result.scalars().all()
 
-    async def get(self, db: AsyncSession, obj_id: int | UUID) -> Optional[ModelT]:
-        stmt = select(self.model).where(
-            cast("ColumnElement[bool]", self.model.id == obj_id)
-        )
+    async def get(
+        self,
+        db: AsyncSession,
+        obj_id: int | UUID,
+        options: Iterable[Any] = (),
+    ) -> Optional[ModelT]:
+
+        stmt = select(self.model)
+
+        if options:
+            stmt = stmt.options(*options)
+
+        stmt = stmt.where(cast("ColumnElement[bool]", self.model.id == obj_id))
+
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -73,11 +86,12 @@ class CRUDBase(Generic[ModelT, CreateT, UpdateT]):
 
         try:
             await db.commit()
-        except IntegrityError:
+        except IntegrityError as e:
             await db.rollback()
+            print(e.orig)
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="One or more sections failed due to a unique constraint violation (e.g., duplicate section_order for a course).",
+                detail="One or more items failed due to a unique constraint violation.",
             )
         except SQLAlchemyError as e:
             await db.rollback()

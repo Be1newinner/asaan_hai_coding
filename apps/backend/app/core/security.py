@@ -32,6 +32,7 @@ def get_password_hash(plain_password: str) -> str:
 
 
 def create_access_token(data: dict, expire_delta: Optional[timedelta] = None) -> str:
+    # 1
     to_encode = data.copy()
     now = datetime.now(tz=timezone.utc)
     expire = now + (
@@ -43,6 +44,27 @@ def create_access_token(data: dict, expire_delta: Optional[timedelta] = None) ->
             "iat": now,
             "iss": "ahc-backend",
             "aud": "ahc-admin",
+            "type": "access-token",
+        }
+    )
+    header = {"alg": JWT_ALGORITHM, "typ": "JWT"}
+    token = jwt.encode(header=header, payload=to_encode, key=settings.SECRET_KEY)
+    return token.decode("utf-8")
+
+
+def create_refresh_token(data: dict, expire_delta: Optional[timedelta] = None) -> str:
+    to_encode = data.copy()
+    now = datetime.now(tz=timezone.utc)
+    expire = now + (
+        expire_delta or timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+    )
+    to_encode.update(
+        {
+            "exp": expire,
+            "iat": now,
+            "iss": "ahc-backend",
+            "aud": "ahc-admin",
+            "type": "refresh-token",
         }
     )
     header = {"alg": JWT_ALGORITHM, "typ": "JWT"}

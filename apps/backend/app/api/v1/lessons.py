@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.lesson import LessonCreate, LessonUpdate, LessonRead
+from app.schemas.lesson import LessonCreate, LessonUpdate, LessonRead, LessonReadBase
 from app.crud import lesson_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
@@ -12,7 +12,7 @@ router = APIRouter(prefix="/lessons", tags=["lessons"])
 
 
 # ─── Public / shared endpoints ───────────────────────────────────
-@router.get("", response_model=list[LessonRead])
+@router.get("", response_model=list[LessonReadBase])
 async def list_lessons(
     section_id: int = Query(..., description="Filter by parent section"),
     db: AsyncSession = Depends(get_async_session),
@@ -46,7 +46,7 @@ async def create_lesson(
 
 @router.post(
     "/bulk",
-    response_model=List[LessonRead],
+    response_model=List[LessonReadBase],
     dependencies=[Depends(get_current_admin)],
 )
 async def create_lessons_bulk(

@@ -1,15 +1,23 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Load, selectinload
 
 from app.crud.base import CRUDBase
 from app.models.course import Course
+from app.models.section import Section
 from app.schemas.course import CourseCreate, CourseUpdate
+
+
+from uuid import UUID
+
+from typing import Iterable, Any
 
 
 class CourseCRUD(CRUDBase[Course, CourseCreate, CourseUpdate]):
     """Domain-specific queries live here."""
 
     async def list_published(self, db: AsyncSession, *, skip: int = 0, limit: int = 20):
+        print(" ------------ DATA START ------------ ")
         stmt = (
             select(self.model)
             .where(self.model.is_published.is_(True))
@@ -17,7 +25,14 @@ class CourseCRUD(CRUDBase[Course, CourseCreate, CourseUpdate]):
             .limit(limit)
         )
         result = await db.execute(stmt)
-        return result.scalars().all()
+        data = result.scalars().all()
+        print(data)
+        print(" ------------ DATA END ------------ ")
+        return data
+
+    async def getDetailed(self, db: AsyncSession, obj_id: int | UUID):
+        forced = (selectinload(self.model.sections).selectinload(Section.lessons),)
+        return await super().get(db, obj_id, forced)
 
 
 course_crud = CourseCRUD(Course)

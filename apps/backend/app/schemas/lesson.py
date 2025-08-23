@@ -17,9 +17,11 @@ class LessonUpdate(BaseModel):
 
 
 # ─── READ ───────────────────────────────────────────
-class LessonRead(ORMBase):
+class LessonReadBase(ORMBase):
     id: int
     section_id: int
     title: str
-    content: str | None
     lesson_order: int
+    
+class LessonRead(LessonReadBase):
+    content: str | None

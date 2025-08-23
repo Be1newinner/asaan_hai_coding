@@ -6,6 +6,7 @@ from app.schemas.section import (
     SectionCreate,
     SectionUpdate,
     SectionRead,
+    SectionReadBase,
 )
 from app.crud import section_crud
 from app.api.deps import get_current_admin
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/sections", tags=["sections"])
 
 
 # ─── Public / shared endpoints ───────────────────────────────────
-@router.get("", response_model=list[SectionRead])
+@router.get("", response_model=list[SectionReadBase])
 async def list_sections(
     course_id: UUID = Query(..., description="Filter by parent course"),
     db: AsyncSession = Depends(get_async_session),
@@ -50,7 +51,7 @@ async def create_section(
 
 @router.post(
     "/bulk",
-    response_model=List[SectionRead],
+    response_model=list[SectionReadBase],
     dependencies=[Depends(get_current_admin)],
 )
 async def create_sections_bulk(

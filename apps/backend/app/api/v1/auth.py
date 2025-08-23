@@ -1,23 +1,30 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.schemas.auth import TokenOut, TokenPayload
 from app.schemas.user import UserRead, UserUpdateByAdmin
-from app.core.security import verify_password, get_password_hash, create_access_token
+from app.core.security import (
+    verify_password,
+    get_password_hash,
+    create_access_token,
+    create_refresh_token,
+)
 from app.db.session import get_async_session
 from app.models.user import User
 
 from app.crud.user import user_crud
 from app.api.deps import extract_token
 
+from app.core.config import settings
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=TokenOut)
 async def login(
+    response: Response,
     form: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_async_session),
 ):
@@ -28,7 +35,7 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect credentials"
         )
-    token = create_access_token(
+    access_token = create_access_token(
         {
             "sub": str(user.id),
             "username": user.username,
@@ -37,7 +44,22 @@ async def login(
             "aud": "ahc-admin",
         }
     )
-    return {"access_token": token, "token_type": "bearer"}
+    refresh_token = create_refresh_token(
+        {
+            "sub": str(user.id),
+            "username": user.username,
+            "role": user.role,
+            "iss": "ahc-backend",
+            "aud": "ahc-admin",
+        }
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        # domain="www.asaanhaicoding.in",
+        expires=settings.REFRESH_TOKEN_EXPIRE_MINUTES * 60,
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @router.patch("/reset-password")

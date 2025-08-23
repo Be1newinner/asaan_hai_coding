@@ -23,11 +23,13 @@ class CourseUpdate(BaseModel):
 
 
 # ─── READ (nested) ─────────────────────────────────
-class CourseRead(ORMBase, TimestampMixin):
+class CourseReadBase(ORMBase, TimestampMixin):
     id: UUID
     title: str
     description: str | None
     instructor_id: UUID | None
     difficulty_level: str | None
     is_published: bool
+
+class CourseRead(CourseReadBase):
     sections: List[SectionRead] = []

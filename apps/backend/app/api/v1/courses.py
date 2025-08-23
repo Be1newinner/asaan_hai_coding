@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.course import CourseCreate, CourseUpdate, CourseRead
+
+from app.schemas.course import CourseCreate, CourseUpdate, CourseRead, CourseReadBase
 from app.crud import course_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
@@ -13,7 +14,7 @@ router = APIRouter(prefix="/courses", tags=["courses"])
 
 
 # ─── Public endpoints ────────────────────────────────────────────
-@router.get("", response_model=list[CourseRead])
+@router.get("", response_model=list[CourseReadBase])
 async def list_courses(
     skip: int = 0, limit: int = 20, db: AsyncSession = Depends(get_async_session)
 ):
@@ -22,7 +23,7 @@ async def list_courses(
 
 @router.get("/{course_id}", response_model=CourseRead)
 async def get_course(course_id: UUID, db: AsyncSession = Depends(get_async_session)):
-    return await course_crud.get(db, course_id)
+    return await course_crud.getDetailed(db, course_id)
 
 
 # ─── Admin endpoints ─────────────────────────────────────────────
@@ -31,11 +32,13 @@ async def create_course(
     data: CourseCreate,
     db: AsyncSession = Depends(get_async_session),
 ):
-    return await course_crud.create(db, data)
+    return await course_crud.create(db,     data)
 
 
 @router.post(
-    "/bulk", response_model=List[CourseRead], dependencies=[Depends(get_current_admin)]
+    "/bulk",
+    response_model=list[CourseReadBase],
+    dependencies=[Depends(get_current_admin)],
 )
 async def create_courses_bulk(
     data: List[CourseCreate],

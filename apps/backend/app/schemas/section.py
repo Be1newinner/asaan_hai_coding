@@ -4,6 +4,7 @@ from app.schemas.base import ORMBase
 from app.schemas.lesson import LessonRead
 from uuid import UUID
 
+
 # ─── WRITE ──────────────────────────────────────────
 class SectionCreate(BaseModel):
     course_id: UUID
@@ -17,9 +18,12 @@ class SectionUpdate(BaseModel):
 
 
 # ─── READ ────────────────────────────────────────────
-class SectionRead(ORMBase):
+class SectionReadBase(ORMBase):
     id: int
     course_id: UUID
     title: str
     section_order: int
+
+
+class SectionRead(SectionReadBase):
     lessons: List[LessonRead] = []

@@ -16,6 +16,7 @@ class Settings(BaseSettings):
 
     SECRET_KEY: str = ""
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 21
     ALGORITHM: str = "HS256"
 
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
