@@ -1,20 +1,20 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Menu, X, Code2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { useState } from "react";
+import Link from "next/link";
+import { Menu, Code2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const navigation = [
-  { name: 'Home', href: '/' },
-  { name: 'Tutorials', href: '/tutorials' },
-  { name: 'Projects', href: '/projects' },
-  { name: 'About', href: '/about' },
-]
+  { name: "Home", href: "/" },
+  { name: "Tutorials", href: "/tutorials" },
+  { name: "Projects", href: "/projects" },
+  { name: "About", href: "/about" },
+];
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-800/50 bg-slate-950/80 backdrop-blur-md">
@@ -50,7 +50,10 @@ export default function Header() {
                 <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] bg-slate-900 border-slate-800">
+            <SheetContent
+              side="right"
+              className="w-[300px] bg-slate-900 border-slate-800"
+            >
               <div className="flex flex-col space-y-6 mt-8">
                 {navigation.map((item) => (
                   <Link
@@ -68,5 +71,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }

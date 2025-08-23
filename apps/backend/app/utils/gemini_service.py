@@ -1,6 +1,6 @@
 # gemini_service.py
 from app.core.config import settings
-from http_client import http_post_json
+from app.utils.http_client import http_post_json
 
 
 def build_gemini_payload(user_text: str, temperature: float, max_tokens: int):

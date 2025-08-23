@@ -1,44 +1,52 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Mail, MessageSquare, Send } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { MessageSquare, Send } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ContactSection() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: ''
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { toast } = useToast()
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     toast({
       title: "Message sent!",
-      description: "Thank you for your message. We'll get back to you soon.",
-    })
+      description:
+        "Thank you for your message. We&apos;ll get back to you soon.",
+    });
 
-    setFormData({ name: '', email: '', message: '' })
-    setIsSubmitting(false)
-  }
+    setFormData({ name: "", email: "", message: "" });
+    setIsSubmitting(false);
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
-    }))
-  }
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8">
@@ -50,7 +58,8 @@ export default function ContactSection() {
             </span>
           </h2>
           <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-            Have a question or want to collaborate? We'd love to hear from you!
+            Have a question or want to collaborate? We&apos;d love to hear from
+            you!
           </p>
         </div>
 
@@ -61,15 +70,19 @@ export default function ContactSection() {
               <span>Send us a message</span>
             </CardTitle>
             <CardDescription className="text-slate-400">
-              Fill out the form below and we'll get back to you as soon as possible.
+              Fill out the form below and we&apos;ll get back to you as soon as
+              possible.
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium text-slate-300">
+                  <label
+                    htmlFor="name"
+                    className="text-sm font-medium text-slate-300"
+                  >
                     Name *
                   </label>
                   <Input
@@ -83,9 +96,12 @@ export default function ContactSection() {
                     placeholder="Your full name"
                   />
                 </div>
-                
+
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-slate-300">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium text-slate-300"
+                  >
                     Email *
                   </label>
                   <Input
@@ -100,9 +116,12 @@ export default function ContactSection() {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
-                <label htmlFor="message" className="text-sm font-medium text-slate-300">
+                <label
+                  htmlFor="message"
+                  className="text-sm font-medium text-slate-300"
+                >
                   Message *
                 </label>
                 <Textarea
@@ -116,7 +135,7 @@ export default function ContactSection() {
                   placeholder="Tell us about your project, question, or how we can help you..."
                 />
               </div>
-              
+
               <Button
                 type="submit"
                 disabled={isSubmitting}
@@ -139,5 +158,5 @@ export default function ContactSection() {
         </Card>
       </div>
     </section>
-  )
+  );
 }

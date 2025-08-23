@@ -1,8 +1,8 @@
 import api from './api';
 import {
   UserCreate,
-  UserRead,
   UserUpdate,
+  UserRead,
 } from '../types/api';
 
 export const usersService = {

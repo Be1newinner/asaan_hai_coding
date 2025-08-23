@@ -1,10 +1,24 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
-import { Github, Linkedin, Mail, MapPin, Calendar, Award, Code2, Briefcase } from 'lucide-react'
-import Image from 'next/image'
-import Link from 'next/link'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import {
+  Github,
+  Linkedin,
+  Mail,
+  MapPin,
+  Calendar,
+  Award,
+  Code2,
+  Briefcase,
+} from "lucide-react";
+import Image from "next/image";
 
 const skills = [
   { name: "JavaScript/TypeScript", level: 95, category: "Frontend" },
@@ -14,37 +28,40 @@ const skills = [
   { name: "Tailwind CSS", level: 90, category: "Frontend" },
   { name: "PostgreSQL", level: 75, category: "Database" },
   { name: "MongoDB", level: 70, category: "Database" },
-  { name: "Docker", level: 65, category: "DevOps" }
-]
+  { name: "Docker", level: 65, category: "DevOps" },
+];
 
 const experience = [
   {
     title: "Senior Full Stack Developer",
     company: "Tech Innovations Inc.",
     period: "2022 - Present",
-    description: "Leading development of scalable web applications using Next.js, TypeScript, and cloud technologies. Mentoring junior developers and architecting solutions for enterprise clients."
+    description:
+      "Leading development of scalable web applications using Next.js, TypeScript, and cloud technologies. Mentoring junior developers and architecting solutions for enterprise clients.",
   },
   {
     title: "Frontend Developer",
     company: "Digital Solutions Ltd.",
     period: "2020 - 2022",
-    description: "Developed responsive web applications using React and modern JavaScript. Collaborated with design teams to implement pixel-perfect UI components and optimize user experiences."
+    description:
+      "Developed responsive web applications using React and modern JavaScript. Collaborated with design teams to implement pixel-perfect UI components and optimize user experiences.",
   },
   {
     title: "Junior Developer",
     company: "StartupXYZ",
     period: "2019 - 2020",
-    description: "Built and maintained web applications using various technologies. Gained experience in full-stack development and agile methodologies."
-  }
-]
+    description:
+      "Built and maintained web applications using various technologies. Gained experience in full-stack development and agile methodologies.",
+  },
+];
 
 const achievements = [
   "Published 50+ programming tutorials with 100K+ views",
   "Built and deployed 25+ production applications",
   "Contributed to 10+ open source projects",
   "Mentored 200+ aspiring developers",
-  "Speaker at 5 tech conferences"
-]
+  "Speaker at 5 tech conferences",
+];
 
 export default function AboutPage() {
   return (
@@ -58,7 +75,8 @@ export default function AboutPage() {
             </span>
           </h1>
           <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-            Passionate developer, educator, and content creator dedicated to making programming accessible for everyone
+            Passionate developer, educator, and content creator dedicated to
+            making programming accessible for everyone
           </p>
         </div>
 
@@ -78,31 +96,50 @@ export default function AboutPage() {
                   <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/20 to-purple-500/20"></div>
                 </div>
                 <div className="flex justify-center space-x-4">
-                  <Button size="sm" variant="outline" className="border-slate-600 hover:bg-slate-800">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-slate-600 hover:bg-slate-800"
+                  >
                     <Github className="h-4 w-4 mr-2" />
                     GitHub
                   </Button>
-                  <Button size="sm" variant="outline" className="border-slate-600 hover:bg-slate-800">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-slate-600 hover:bg-slate-800"
+                  >
                     <Linkedin className="h-4 w-4 mr-2" />
                     LinkedIn
                   </Button>
-                  <Button size="sm" variant="outline" className="border-slate-600 hover:bg-slate-800">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-slate-600 hover:bg-slate-800"
+                  >
                     <Mail className="h-4 w-4 mr-2" />
                     Email
                   </Button>
                 </div>
               </div>
-              
+
               <div className="lg:col-span-2">
-                <h2 className="text-3xl font-bold mb-4 text-white">Hi, I'm the ASAAN HAI CODING Team!</h2>
+                <h2 className="text-3xl font-bold mb-4 text-white">
+                  Hi, I&apos;m the ASAAN HAI CODING Team!
+                </h2>
                 <p className="text-slate-300 leading-relaxed mb-6">
-                  We are a passionate team of developers and educators committed to making programming simple and accessible. 
-                  With years of experience in web development, mobile apps, and software engineering, we create comprehensive 
-                  tutorials and build real-world projects to help aspiring developers master their craft.
+                  We are a passionate team of developers and educators committed
+                  to making programming simple and accessible. With years of
+                  experience in web development, mobile apps, and software
+                  engineering, we create comprehensive tutorials and build
+                  real-world projects to help aspiring developers master their
+                  craft.
                 </p>
                 <p className="text-slate-300 leading-relaxed mb-6">
-                  Our mission is to bridge the gap between complex programming concepts and practical implementation. 
-                  We believe that anyone can learn to code with the right guidance, clear explanations, and hands-on practice.
+                  Our mission is to bridge the gap between complex programming
+                  concepts and practical implementation. We believe that anyone
+                  can learn to code with the right guidance, clear explanations,
+                  and hands-on practice.
                 </p>
                 <div className="flex items-center space-x-6 text-sm text-slate-400">
                   <div className="flex items-center space-x-1">
@@ -135,12 +172,19 @@ export default function AboutPage() {
               {skills.map((skill) => (
                 <div key={skill.name} className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-300 font-medium">{skill.name}</span>
+                    <span className="text-slate-300 font-medium">
+                      {skill.name}
+                    </span>
                     <div className="flex items-center space-x-2">
-                      <Badge variant="secondary" className="bg-slate-800 text-slate-400 text-xs">
+                      <Badge
+                        variant="secondary"
+                        className="bg-slate-800 text-slate-400 text-xs"
+                      >
                         {skill.category}
                       </Badge>
-                      <span className="text-slate-400 text-sm">{skill.level}%</span>
+                      <span className="text-slate-400 text-sm">
+                        {skill.level}%
+                      </span>
                     </div>
                   </div>
                   <Progress value={skill.level} className="h-2" />
@@ -195,10 +239,18 @@ export default function AboutPage() {
                       <Briefcase className="h-6 w-6 text-white" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-white">{job.title}</h3>
-                      <p className="text-purple-400 font-medium">{job.company}</p>
-                      <p className="text-slate-400 text-sm mb-2">{job.period}</p>
-                      <p className="text-slate-300 leading-relaxed">{job.description}</p>
+                      <h3 className="text-xl font-bold text-white">
+                        {job.title}
+                      </h3>
+                      <p className="text-purple-400 font-medium">
+                        {job.company}
+                      </p>
+                      <p className="text-slate-400 text-sm mb-2">
+                        {job.period}
+                      </p>
+                      <p className="text-slate-300 leading-relaxed">
+                        {job.description}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -208,5 +260,5 @@ export default function AboutPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

@@ -15,7 +15,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { coursesService } from "@/services/courses";
 import { CourseReadBase } from "@/types/api";
-import { titleToSlug } from "@/utils/slug"; // Import the new utility function
+import { titleToSlug } from "@/utils/slug"; 
 
 export default function TopTutorials() {
   const [tutorials, setTutorials] = useState<CourseReadBase[]>([]);

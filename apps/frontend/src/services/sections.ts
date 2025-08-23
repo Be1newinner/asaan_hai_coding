@@ -1,7 +1,7 @@
 import api from "./api";
 import {
-  SectionCreate,
   SectionRead,
+  SectionCreate,
   SectionReadBase,
   SectionUpdate,
 } from "../types/api";

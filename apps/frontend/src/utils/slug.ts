@@ -1,27 +1,22 @@
 export const titleToSlug = (title: string, id: string | number): string => {
-  const combinedString = `${title}-${id}`;
-  return combinedString
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trimStart()
-    .trimEnd();
-};
-
-export const slugToTitle = (slug: string): string => {
-  if (!slug.includes("_")) return slug;
-  return slug.split("_")[1];
+  const cleanString = (str: string): string => {
+    return str
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .trimStart()
+      .trimEnd();
+  };
+  const combinedString = `${cleanString(title)}_${id}`;
+  return combinedString;
 };
 
 export const slugToId = (slug: string): string | null => {
-  const parts = slug.split('-');
+  const parts = slug.split("_");
   if (parts.length > 0) {
     const lastPart = parts[parts.length - 1];
-    // Check if the last part is a number
-    if (!isNaN(Number(lastPart))) {
-      return lastPart;
-    }
+    return lastPart;
   }
   return null;
 };
