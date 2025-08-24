@@ -18,9 +18,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 21
     ALGORITHM: str = "HS256"
-    GEMINI_ENDPOINT_TEMPLATE: str | None = None
+    GEMINI_API_KEY: str | None = None
+    GEMINI_MODEL: str | None = None
 
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    BACKEND_CORS_ORIGINS: List[str] = []
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod

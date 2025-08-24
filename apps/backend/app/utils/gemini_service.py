@@ -1,34 +1,44 @@
 # gemini_service.py
 from app.core.config import settings
-from app.utils.http_client import http_post_json
+from google import genai
+from google.genai import types
+import asyncio
+import json
+
+client = genai.Client(
+    api_key=settings.GEMINI_API_KEY,
+)
 
 
-def build_gemini_payload(user_text: str, temperature: float, max_tokens: int):
-    return {
-        "contents": [{"role": "user", "parts": [{"text": user_text}]}],
-        "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
-    }
+async def call_gemini(prompt_text: str, max_tokens: int) -> str:
+    cfg = types.GenerateContentConfig(
+        response_mime_type="text/plain",
+        max_output_tokens=max_tokens,
+    )
+
+    if hasattr(client, "aio") and hasattr(client.aio, "models"):
+        resp = await client.aio.models.generate_content(
+            model=getattr(settings, "GEMINI_MODEL", None) or "gemini-2.5-flash",
+            contents=prompt_text,
+            config=cfg,
+        )
+        return (resp.text or "").strip()
+
+    resp = await asyncio.to_thread(
+        client.models.generate_content,
+        model=getattr(settings, "GEMINI_MODEL", None) or "gemini-2.5-flash",
+        contents=prompt_text,
+        config=cfg,
+    )
+    return (resp.text or "").strip()
 
 
-def extract_first_candidate_text(data: dict) -> str:
-    candidates = data.get("candidates", [])
-    if not candidates:
-        raise ValueError("No candidates returned by Gemini.")
-
-    parts = candidates[0].get("content", {}).get("parts", [])
-    if not parts:
-        raise ValueError("Gemini response missing 'parts'.")
-
-    for part in parts:
-        if "text" in part:
-            return part["text"]
-    raise ValueError("Gemini response parts missing 'text' field.")
-
-
-def call_gemini(prompt_text: str, temperature: float, max_tokens: int) -> str:
-    if not settings.GEMINI_ENDPOINT_TEMPLATE:
-        raise ValueError("GEMIN API IS NOT PASSED!")
-    url = settings.GEMINI_ENDPOINT_TEMPLATE
-    payload = build_gemini_payload(prompt_text, temperature, max_tokens)
-    data = http_post_json(url, payload)
-    return extract_first_candidate_text(data)
+def extract_output_as_json(api_output_string):
+    try:
+        print(api_output_string)
+        parsed_data = json.loads(api_output_string)
+        return parsed_data
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}")
+    except (IndexError, TypeError) as e:
+        print(f"Error accessing data from parsed JSON: {e}")
