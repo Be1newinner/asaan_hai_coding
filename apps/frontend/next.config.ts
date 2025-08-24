@@ -1,9 +1,31 @@
 import type { NextConfig } from "next";
+import createMDX from "@next/mdx";
 
-const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+// Turbopack requires plugin names as strings and JSON-serializable options
+const mdxOptions = {
+  // If you need GFM tables/footnotes etc, use string form too:
+  // remarkPlugins: [["remark-gfm", { /* gfm opts */ }]],
+  remarkPlugins: ["remark-gfm"],
+  rehypePlugins: [
+    ["rehype-pretty-code", { theme: "solarized-dark", keepBackground: false }],
+  ],
 };
 
-export default nextConfig;
+const withMDX = createMDX({
+  extension: /\.mdx?$/,
+  options: mdxOptions,
+});
+
+/** @type {import('next').NextConfig} */
+const nextConfig: NextConfig = {
+  pageExtensions: ["ts", "tsx", "md", "mdx"],
+  // Ensure JS loader path is used so string plugins work
+  experimental: { mdxRs: false },
+  reactStrictMode: true,
+  eslint: { ignoreDuringBuilds: true },
+  // Optional: if TS complains about types for plugin tuples, add a ts-ignore:
+  // (Known mismatch while @next/mdx types catch up)
+  // @ts-ignore
+};
+
+export default withMDX(nextConfig);

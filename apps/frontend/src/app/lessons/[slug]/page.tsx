@@ -37,35 +37,6 @@ const LessonDetailPage: React.FC<LessonDetailPageProps> = async ({
     if (!lesson) {
       notFound();
     }
-
-    // const course = await coursesService.getCourse(lesson.course_id);
-    // if (course) {
-    // courseTitle = course.title;
-    // let allLessons: LessonRead[] = [];
-    // course.sections
-    //   .sort((a, b) => a.section_order - b.section_order)
-    //   .forEach((section) => {
-    //     if (section.id === lesson?.section_id) {
-    //       sectionTitle = section.title;
-    //     }
-    //     if (section.lessons) {
-    //       allLessons = allLessons.concat(
-    //         section.lessons.sort((a, b) => a.lesson_order - b.lesson_order)
-    //       );
-    //     }
-    //   });
-
-    // const currentLessonIndex = allLessons.findIndex(
-    //   (l) => l.id === lesson?.id
-    // );
-
-    // if (currentLessonIndex > 0) {
-    //   previousLessonId = allLessons[currentLessonIndex - 1].id;
-    // }
-    // if (currentLessonIndex < allLessons.length - 1) {
-    //   nextLessonId = allLessons[currentLessonIndex + 1].id;
-    // }
-    // }
   } catch (error) {
     console.error(`Failed to fetch lesson with ID ${lessonId}:`, error);
     notFound();
@@ -76,7 +47,7 @@ const LessonDetailPage: React.FC<LessonDetailPageProps> = async ({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-5xl">
       <LessonHeroSection
         lesson={lesson}
         courseTitle={courseTitle}
