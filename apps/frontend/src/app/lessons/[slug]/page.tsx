@@ -1,11 +1,11 @@
+"use client";
 import React from "react";
 import { lessonsService } from "@/services/lessons";
-// import { coursesService } from "@/services/courses";
 import LessonHeroSection from "@/components/lesson-detail/LessonHeroSection";
 import LessonContent from "@/components/lesson-detail/LessonContent";
 import LessonPagination from "@/components/lesson-detail/LessonPagination";
-import { notFound } from "next/navigation";
-import { LessonRead } from "@/types/api";
+import { notFound, useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 
 interface LessonDetailPageProps {
   params: {
@@ -13,31 +13,42 @@ interface LessonDetailPageProps {
   };
 }
 
-const LessonDetailPage: React.FC<LessonDetailPageProps> = async ({
-  params,
-}) => {
-  const param_id = await params;
-  console.log(param_id);
-  const lessonId = parseInt(param_id.slug, 10);
+const LessonDetailPage: React.FC<LessonDetailPageProps> = () => {
+  const params = useParams<{ slug: string }>();
+
+  const lessonId = parseInt(params.slug, 10);
+
   if (isNaN(lessonId)) {
     notFound();
   }
 
-  console.log({ lessonId });
+  const {
+    data: lesson,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["lesson", lessonId],
+    queryFn: () => lessonsService.getLesson(lessonId),
+    enabled: !isNaN(lessonId),
+  });
 
-  let lesson: LessonRead | null = null;
-  let courseTitle: string | undefined;
-  let sectionTitle: string | undefined;
+  const courseTitle: string | undefined = undefined;
+  const sectionTitle: string | undefined = undefined;
   const previousLessonId: number | null = null;
   const nextLessonId: number | null = null;
 
-  try {
-    lesson = await lessonsService.getLesson(lessonId);
-    console.log({ lesson });
-    if (!lesson) {
-      notFound();
-    }
-  } catch (error) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="text-slate-400">Loading lesson details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
     console.error(`Failed to fetch lesson with ID ${lessonId}:`, error);
     notFound();
   }

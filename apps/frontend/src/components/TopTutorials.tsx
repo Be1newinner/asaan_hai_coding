@@ -12,34 +12,21 @@ import { Button } from "@/components/ui/button";
 import { Clock, BookOpen } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { coursesService } from "@/services/courses";
-import { CourseReadBase } from "@/types/api";
-import { titleToSlug } from "@/utils/slug"; 
+import { titleToSlug } from "@/utils/slug";
 
 export default function TopTutorials() {
-  const [tutorials, setTutorials] = useState<CourseReadBase[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: tutorials,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["tutorials"],
+    queryFn: () => coursesService.listCourses(),
+  });
 
-  useEffect(() => {
-    const fetchTutorials = async () => {
-      try {
-        setLoading(true);
-        const data = await coursesService.listCourses();
-        setTutorials(data);
-      } catch (err) {
-        console.error("Failed to fetch tutorials:", err);
-        setError("Failed to load tutorials. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTutorials();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900/30 text-center text-white">
         <p>Loading tutorials...</p>
@@ -50,7 +37,7 @@ export default function TopTutorials() {
   if (error) {
     return (
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900/30 text-center text-red-500">
-        <p>{error}</p>
+        <p>Failed to load tutorials: {error.message}</p>
       </section>
     );
   }
@@ -71,7 +58,7 @@ export default function TopTutorials() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {tutorials.map((tutorial) => (
+          {tutorials?.map((tutorial) => (
             <Card
               key={tutorial.id}
               className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all duration-300 group"
