@@ -36,3 +36,4 @@ npm-debug.log*
 *.pem
 *.pyc
 apps/backend/app/__pycache__/__init__.cpython-313.pyc
+pnpm-lock.yaml

@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import QueryProvider from "@/components/providers/QueryProvider";
+import UniverseBackground from "@/components/UniverseBackground";
+import AnimatedCursor from "@/components/AnimatedCursor";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,12 +23,25 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body
-        className={`${inter.className} bg-slate-950 text-slate-100 antialiased`}
-      >
+      <body className={`${inter.className} text-slate-100 antialiased`}>
+        <UniverseBackground />
+        <AnimatedCursor
+          innerSize={8}
+          outerSize={35}
+          innerScale={1}
+          outerScale={2}
+          outerAlpha={0}
+          // hasBlendMode={true}
+          innerStyle={{
+            backgroundColor: "var(--cursor-color)",
+          }}
+          outerStyle={{
+            border: "3px solid var(--cursor-color)",
+          }}
+        />
         <QueryProvider>
           <Header />
-          <main className="min-h-screen">{children}</main>
+          <main className="min-h-screen z-10">{children}</main>
         </QueryProvider>
       </body>
     </html>
