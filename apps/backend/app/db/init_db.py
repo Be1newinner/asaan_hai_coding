@@ -13,9 +13,6 @@ from app.db.base import BaseModel
 # ──────────────────────────────────────────────────────────────────
 async def init_db() -> None:
     """Create all tables & seed the initial ADMIN user if configured."""
-    async with engine.begin() as conn:
-        await conn.run_sync(BaseModel.metadata.create_all)
-
     if settings.FIRST_SUPERUSER and settings.FIRST_SUPERUSER_PASSWORD:
         async with AsyncSessionLocal() as session:
             await _ensure_admin(session)

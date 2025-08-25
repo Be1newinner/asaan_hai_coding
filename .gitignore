@@ -35,3 +35,4 @@ npm-debug.log*
 .DS_Store
 *.pem
 *.pyc
+apps/backend/app/__pycache__/__init__.cpython-313.pyc

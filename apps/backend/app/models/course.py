@@ -43,3 +43,4 @@ class Course(BaseModel):
         cascade="all, delete-orphan",
         lazy="select",
     )
+    images: Mapped[str | None] = mapped_column(String(255))

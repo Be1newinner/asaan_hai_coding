@@ -16,3 +16,4 @@ class ProjectDetail(BaseModel):
     markdown_content: Mapped[str] = mapped_column(Text, nullable=False)
 
     project: Mapped["Project"] = relationship(back_populates="detail")
+    
