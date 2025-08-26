@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.base import CRUDBase
@@ -23,6 +24,10 @@ class ProjectCRUD(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
         )
         res = await db.execute(stmt)
         return res.scalars().all()
+
+    async def get_detailed(self, db: AsyncSession, obj_id: int):
+        forced = (selectinload(Project.detail),)
+        return self.get(db, obj_id, forced)
 
 
 project_crud = ProjectCRUD(Project)

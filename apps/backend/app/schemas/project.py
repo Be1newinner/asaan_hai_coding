@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Any
 
 from pydantic import BaseModel, Field
 from app.schemas.base import ORMBase, TimestampMixin
@@ -55,4 +55,8 @@ class ProjectRead(ORMBase, TimestampMixin):
     live_demo_url: str | None
     github_url: str | None
     is_published: bool
-    detail: Optional[ProjectDetailRead] = None
+    # detail: Optional[Any]
+
+
+class ProjectReadDetailed(ProjectRead):
+    detail: Optional[Any]
