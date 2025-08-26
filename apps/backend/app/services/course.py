@@ -5,8 +5,8 @@ from sqlalchemy.orm import Load, selectinload
 from app.services.base import CRUDBase
 from app.models.course import Course
 from app.models.section import Section
+from app.models.user import User
 from app.schemas.course import CourseCreate, CourseUpdate
-
 
 from uuid import UUID
 
@@ -20,6 +20,11 @@ class CourseCRUD(CRUDBase[Course, CourseCreate, CourseUpdate]):
         print(" ------------ DATA START ------------ ")
         stmt = (
             select(self.model)
+            .options(
+                selectinload(Course.instructor).load_only(
+                    User.id, User.full_name, User.email
+                )
+            )
             .where(self.model.is_published.is_(True))
             .offset(skip)
             .limit(limit)
@@ -31,7 +36,12 @@ class CourseCRUD(CRUDBase[Course, CourseCreate, CourseUpdate]):
         return data
 
     async def getDetailed(self, db: AsyncSession, obj_id: int | UUID):
-        forced = (selectinload(self.model.sections).selectinload(Section.lessons),)
+        forced = (
+            selectinload(self.model.sections).selectinload(Section.lessons),
+            selectinload(self.model.instructor).load_only(
+                User.id, User.full_name, User.email
+            ),
+        )
         return await super().get(db, obj_id, forced)
 
 

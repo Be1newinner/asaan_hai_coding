@@ -55,8 +55,6 @@ class ProjectRead(ORMBase, TimestampMixin):
     live_demo_url: str | None
     github_url: str | None
     is_published: bool
-    # detail: Optional[Any]
-
 
 class ProjectReadDetailed(ProjectRead):
     detail: Optional[Any]

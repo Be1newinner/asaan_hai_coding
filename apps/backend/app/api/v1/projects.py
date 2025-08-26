@@ -29,7 +29,7 @@ async def list_projects(
 
 @router.get("/{project_id}", response_model=ProjectRead)
 async def get_project(project_id: int, db: AsyncSession = Depends(get_async_session)):
-    proj = await project_crud.get(db, project_id)
+    proj = await project_crud.get_detailed(db, project_id)
     if not proj or not proj.is_published:
         raise HTTPException(status_code=404, detail="Project not found")
     return proj

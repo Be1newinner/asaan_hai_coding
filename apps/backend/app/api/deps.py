@@ -27,6 +27,7 @@ def require_role(allowed_roles: list[str]):
     ):
         # print({"token": token.model_dump().get("credentials")})
         # return token
+        
         token = token_obj.credentials
         if not token:
             raise HTTPException(

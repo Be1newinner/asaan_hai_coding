@@ -10,9 +10,9 @@ from datetime import datetime, timezone
 from uuid import UUID, uuid4
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
-
 if TYPE_CHECKING:
     from app.models.section import Section
+    from app.models.user import User
 
 
 class Course(BaseModel):
@@ -24,7 +24,9 @@ class Course(BaseModel):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     instructor_id: Mapped[UUID | None] = mapped_column(
-        PG_UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")
+        PG_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), default=datetime.now
@@ -43,4 +45,5 @@ class Course(BaseModel):
         cascade="all, delete-orphan",
         lazy="select",
     )
+    instructor: Mapped["User | None"] = relationship(back_populates="courses", lazy="selectin")
     images: Mapped[str | None] = mapped_column(String(255))

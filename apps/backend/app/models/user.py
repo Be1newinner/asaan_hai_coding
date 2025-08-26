@@ -2,10 +2,15 @@ from app.db.base import BaseModel
 from enum import Enum
 from uuid import UUID, uuid4
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from typing import TYPE_CHECKING
 
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, TIMESTAMP
 from datetime import datetime, timezone
+from app.models.course import Course
+
+if TYPE_CHECKING:
+    from app.models.course import Course
 
 
 class UserRole(str, Enum):
@@ -38,4 +43,9 @@ class User(BaseModel):
     )
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    # relationships
+    courses: Mapped[list["Course"]] = relationship(
+        back_populates="instructor", lazy="selectin"
     )

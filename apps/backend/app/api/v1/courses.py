@@ -32,7 +32,7 @@ async def create_course(
     data: CourseCreate,
     db: AsyncSession = Depends(get_async_session),
 ):
-    return await course_crud.create(db,     data)
+    return await course_crud.create(db, data)
 
 
 @router.post(

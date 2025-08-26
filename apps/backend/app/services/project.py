@@ -27,7 +27,7 @@ class ProjectCRUD(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
 
     async def get_detailed(self, db: AsyncSession, obj_id: int):
         forced = (selectinload(Project.detail),)
-        return self.get(db, obj_id, forced)
+        return await self.get(db, obj_id, forced)
 
 
 project_crud = ProjectCRUD(Project)
