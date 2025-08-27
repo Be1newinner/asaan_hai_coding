@@ -23,12 +23,13 @@ if config.config_file_name is not None:
 
 from app.core.config import settings
 from app.db.base import BaseModel
-from app.models import user as _user
 from app.models import course as _course
-from app.models import section as _section
 from app.models import lesson as _lesson
-from app.models import project as _project
+from app.models import media as _media
 from app.models import project_detail as _project_detail
+from app.models import project as _project
+from app.models import section as _section
+from app.models import user as _user
 
 target_metadata = BaseModel.metadata
 

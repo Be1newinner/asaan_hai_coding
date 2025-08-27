@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 import json
 import sys
+import cloudinary
 
 
 class Settings(BaseSettings):
@@ -41,6 +42,8 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: str | None = None
     FIRST_SUPERUSER_PASSWORD: str | None = None
 
+    CLOUDINARY_URL: str = ""
+
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=True,
@@ -56,7 +59,13 @@ def get_settings() -> Settings:
     Validates that required environment variables are present.
     """
     try:
-        return Settings()
+        settings = Settings()
+        cloudinary.config(
+            cloud_name="decvnwos9",
+            api_key="428768583138577",
+            api_secret="PJAI5UKNfOCvKi2ar8QpxEslSnA",
+        )
+        return settings
     except ValidationError as e:
         print(f"❌ Configuration Error: {e}")
         sys.exit(1)

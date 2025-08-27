@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import (
     # OAuth2PasswordBearer,
     HTTPBearer,
@@ -6,7 +6,7 @@ from fastapi.security import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import decode_access_token
+from app.core.security import decode_access_token, decode_refresh_token
 from app.db.session import get_async_session
 from app.services import user_crud
 from app.schemas.auth import TokenPayload
@@ -55,6 +55,20 @@ async def extract_token(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
         )
     payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+        )
+    return TokenPayload(**payload)
+
+
+async def extract_refresh_token(request: Request) -> TokenPayload:
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+        )
+    payload = decode_refresh_token(refresh_token)
     if not payload:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"

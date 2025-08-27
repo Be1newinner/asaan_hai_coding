@@ -77,3 +77,9 @@ def decode_access_token(token: str) -> Optional[JWTClaims]:
         return jwt.decode(s=token, key=settings.SECRET_KEY)
     except errors.DecodeError:
         return None
+
+def decode_refresh_token(token: str) -> Optional[JWTClaims]:
+    try:
+        return jwt.decode(s=token, key=settings.SECRET_KEY)
+    except errors.DecodeError:
+        return None

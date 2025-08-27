@@ -15,7 +15,7 @@ from app.db.session import get_async_session
 from app.models.user import User
 
 from app.services.user import user_crud
-from app.api.deps import extract_token
+from app.api.deps import extract_token, extract_refresh_token
 
 from app.core.config import settings
 
@@ -58,6 +58,26 @@ async def login(
         value=refresh_token,
         # domain="www.asaanhaicoding.in",
         expires=settings.REFRESH_TOKEN_EXPIRE_MINUTES * 60,
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.post("/refresh", response_model=TokenOut)
+async def refresh(
+    token_payload: TokenPayload = Depends(extract_refresh_token),
+    db: AsyncSession = Depends(get_async_session),
+):
+    user = await user_crud.get(db, token_payload.sub)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    access_token = create_access_token(
+        {
+            "sub": str(user.id),
+            "username": user.username,
+            "role": user.role,
+            "iss": "ahc-backend",
+            "aud": "ahc-admin",
+        }
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
