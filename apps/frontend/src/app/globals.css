@@ -93,3 +93,7 @@
   background-color: var(--background);
   color: white;
 }
+
+.lil-gui {
+  display: none !important; 
+}
