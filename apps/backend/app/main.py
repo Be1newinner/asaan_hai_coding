@@ -9,7 +9,6 @@ from app.db.init_db import init_db
 
 from contextlib import asynccontextmanager
 
-from typing import cast
 import logging
 
 
@@ -23,7 +22,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    version="1.0.0",
+    version="1.2.8",
     docs_url="/",
     lifespan=lifespan,
 )

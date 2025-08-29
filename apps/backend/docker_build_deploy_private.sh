@@ -2,6 +2,8 @@
 set -e
 
 project_name=ahc-backend
+# version=1.2.6
+# current_version=1.2.5
 
 increment_version() {
   local ver=$1
@@ -12,10 +14,6 @@ increment_version() {
 }
 
 current_version=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${project_name}:" | awk -F: '{print $2}' | sort -V | tail -n 1)
-
-if [ -z "$current_version" ]; then
-  current_version="1.2.2"
-fi
 
 version=$(increment_version "$current_version")
 
@@ -92,8 +90,9 @@ ssh oracle bash -s << EOF
 
   echo "Remote deployment done."
 
-  echo "Running previous container with version ${current_version}..."
+  echo "removing previous container with version ${current_version}..."
   docker image rm ${project_name}:${current_version}
+
 EOF
 
 echo "Done."
