@@ -201,7 +201,7 @@ async def update_media(
 async def hard_delete_media(
     media_id: UUID, db: AsyncSession = Depends(get_async_session)
 ):
-    await media_service.delete(db, media_id)
+    await media_service.delete_media_from_cloudinary_and_db(db, media_id)
     return
 
 

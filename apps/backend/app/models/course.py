@@ -45,5 +45,7 @@ class Course(BaseModel):
         cascade="all, delete-orphan",
         lazy="select",
     )
-    instructor: Mapped["User | None"] = relationship(back_populates="courses", lazy="selectin")
+    instructor: Mapped["User | None"] = relationship(
+        back_populates="courses", lazy="selectin"
+    )
     images: Mapped[str | None] = mapped_column(String(255))
