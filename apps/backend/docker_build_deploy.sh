@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+project_name=ahc-backend
+
 increment_version() {
   local ver=$1
   local major minor patch
@@ -9,7 +11,7 @@ increment_version() {
   echo "${major}.${minor}.${patch}"
 }
 
-current_version=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^ahc-backend:" | awk -F: '{print $2}' | sort -V | tail -n 1)
+current_version=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${project_name}:" | awk -F: '{print $2}' | sort -V | tail -n 1)
 
 if [ -z "$current_version" ]; then
   current_version="1.2.2"
@@ -19,36 +21,36 @@ version=$(increment_version "$current_version")
 
 echo "Using next version: $version"
 
-echo "Building Docker image ahc-backend:${version}..."
-docker build -t ahc-backend:"${version}" .
+echo "Building Docker image ${project_name}:${version}..."
+docker build -t ${project_name}:"${version}" .
 
 echo "Stopping and removing old container (if exists)..."
-if docker ps -a --format '{{.Names}}' | grep -q "^ahc-backend$"; then
-  docker stop ahc-backend
-  docker rm ahc-backend
+if docker ps -a --format '{{.Names}}' | grep -q "^${project_name}$"; then
+  docker stop ${project_name}
+  docker rm ${project_name}
 fi
 
-echo "Removing old Docker image ahc-backend:${current_version} (if exists)..."
-if docker images -q "ahc-backend:${current_version}" > /dev/null; then
-  docker rmi "ahc-backend:${current_version}" || echo "Old image may be in use, skipping removal"
+echo "Removing old Docker image ${project_name}:${current_version} (if exists)..."
+if docker images -q "${project_name}:${current_version}" > /dev/null; then
+  docker rmi "${project_name}:${current_version}" || echo "Old image may be in use, skipping removal"
 fi
 
 echo "Running new container..."
-docker run -d --name ahc-backend -p 8000:8000 --env-file .env ahc-backend:"${version}"
+docker run -d --name ${project_name} -p 8000:8000 --env-file .env ${project_name}:"${version}"
 
 sleep 5
 
-if ! docker ps --format '{{.Names}}' | grep -q "^ahc-backend$"; then
+if ! docker ps --format '{{.Names}}' | grep -q "^${project_name}$"; then
   echo "Container failed to start. Last log line:"
-  docker logs ahc-backend --tail 1
+  docker logs ${project_name} --tail 1
   exit 1
 fi
 
 echo "Saving Docker image to tar file..."
-docker save -o "ahc-backend-${version}.tar" ahc-backend:"${version}"
+docker save -o "${project_name}-${version}.tar" ${project_name}:"${version}"
 
 echo "Copying tar file to remote server..."
-scp "ahc-backend-${version}.tar" oracle:~/projects
+scp "${project_name}-${version}.tar" oracle:~/projects
 
 echo "Deploying new Docker image and container on remote server..."
 ssh oracle bash -s << EOF
@@ -57,11 +59,11 @@ ssh oracle bash -s << EOF
 
   cd ~/projects
 
-  echo "Loading Docker image ahc-backend:${version} from tar..."
-  docker load -i "ahc-backend-\${version}.tar"
+  echo "Loading Docker image ${project_name}:${version} from tar..."
+  docker load -i "${project_name}-${version}.tar"
 
   echo "Running Alembic migrations on remote..."
-  docker run --rm --env-file ahc.env -e PYTHONPATH=/app -w /app ahc-backend:"\${version}" \
+  docker run --rm --env-file ahc.env -e PYTHONPATH=/app -w /app ${project_name}:"${version}" \
     bash -lc '
       set -e
       echo "DB revision before:" && (alembic current || true)
@@ -75,20 +77,23 @@ ssh oracle bash -s << EOF
     '
 
   echo "Stopping and removing old container (if exists)..."
-  if docker ps -a --format '{{.Names}}' | grep -q '^ahc-backend\$'; then
-    docker stop ahc-backend
-    docker rm ahc-backend
+  if docker ps -a --format '{{.Names}}' | grep -q '^${project_name}\$'; then
+    docker stop ${project_name}
+    docker rm ${project_name}
   fi
 
   echo "Removing old Docker image with previous version if exists..."
-  if [ -n "\$(docker images -q "ahc-backend:\${current_version}")" ]; then
-    docker rmi "ahc-backend:\${current_version}" || echo "Old image may be in use, skipping removal"
+  if [ -n "\$(docker images -q "${project_name}:${current_version}")" ]; then
+    docker rmi "${project_name}:${current_version}" || echo "Old image may be in use, skipping removal"
   fi
 
-  echo "Running new container with version \${version}..."
-  docker run -d --name ahc-backend -p 8000:8000 --env-file ahc.env ahc-backend:"\${version}"
+  echo "Running new container with version ${version}..."
+  docker run -d --name ${project_name} -p 8000:8000 --env-file ahc.env ${project_name}:"${version}"
 
   echo "Remote deployment done."
+
+  echo "Running previous container with version ${current_version}..."
+  docker image rm ${project_name}:${current_version}
 EOF
 
 echo "Done."

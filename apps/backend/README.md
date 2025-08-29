@@ -186,56 +186,81 @@ asaan_haic_coding/
 ## **API Structure — Grouped by Domain**
 
 ### **Courses & Learning Content**
+
 **Public:**
-- `GET /api/v1/courses` → List published courses *(filters: difficulty_level, search, pagination)*  
-- `GET /api/v1/courses/{id_or_slug}` → Get single course details *(includes sections → lessons → video snippets)*  
-- `GET /api/v1/courses/{id_or_slug}/sections` → List sections for a course  
-- `GET /api/v1/courses/{id_or_slug}/lessons` → List all lessons (optionally filter by section)  
-- `GET /api/v1/lessons/{lesson_id}` → Get single lesson content with videos  
+
+- `GET /api/v1/courses` → List published courses _(filters: difficulty_level, search, pagination)_
+- `GET /api/v1/courses/{id_or_slug}` → Get single course details _(includes sections → lessons → video snippets)_
+- `GET /api/v1/courses/{id_or_slug}/sections` → List sections for a course
+- `GET /api/v1/courses/{id_or_slug}/lessons` → List all lessons (optionally filter by section)
+- `GET /api/v1/lessons/{lesson_id}` → Get single lesson content with videos
 
 **Admin (JWT: role=ADMIN):**
-- `POST /api/v1/courses` → Create a new course  
-- `PUT /api/v1/courses/{id_or_slug}` → Update course details  
-- `DELETE /api/v1/courses/{id_or_slug}` → Delete course *(soft delete optional)*  
-- `PATCH /api/v1/courses/{id_or_slug}/publish` → Publish/unpublish a course  
 
-- `POST /api/v1/sections` → Create a section  
-- `PUT /api/v1/sections/{section_id}` → Update a section  
-- `DELETE /api/v1/sections/{section_id}` → Delete a section  
+- `POST /api/v1/courses` → Create a new course
+- `PUT /api/v1/courses/{id_or_slug}` → Update course details
+- `DELETE /api/v1/courses/{id_or_slug}` → Delete course _(soft delete optional)_
+- `PATCH /api/v1/courses/{id_or_slug}/publish` → Publish/unpublish a course
 
-- `POST /api/v1/lessons` → Create a lesson  
-- `PUT /api/v1/lessons/{lesson_id}` → Update lesson content  
-- `DELETE /api/v1/lessons/{lesson_id}` → Delete lesson  
+- `POST /api/v1/sections` → Create a section
+- `PUT /api/v1/sections/{section_id}` → Update a section
+- `DELETE /api/v1/sections/{section_id}` → Delete a section
 
-- `POST /api/v1/video-snippets` → Add a video snippet to a lesson  
-- `PUT /api/v1/video-snippets/{video_id}` → Update video snippet metadata  
-- `DELETE /api/v1/video-snippets/{video_id}` → Delete snippet  
+- `POST /api/v1/lessons` → Create a lesson
+- `PUT /api/v1/lessons/{lesson_id}` → Update lesson content
+- `DELETE /api/v1/lessons/{lesson_id}` → Delete lesson
 
-***
+- `POST /api/v1/video-snippets` → Add a video snippet to a lesson
+- `PUT /api/v1/video-snippets/{video_id}` → Update video snippet metadata
+- `DELETE /api/v1/video-snippets/{video_id}` → Delete snippet
+
+---
 
 ### **Projects & Portfolio**
+
 **Public:**
-- `GET /api/v1/projects` → List published projects *(filters: project_type, search, featured)*  
-- `GET /api/v1/projects/{id_or_slug}` → Project details *(includes markdown content rendered to HTML)*  
+
+- `GET /api/v1/projects` → List published projects _(filters: project_type, search, featured)_
+- `GET /api/v1/projects/{id_or_slug}` → Project details _(includes markdown content rendered to HTML)_
 
 **Admin (JWT: role=ADMIN):**
-- `POST /api/v1/projects` → Create project metadata  
-- `PUT /api/v1/projects/{id_or_slug}` → Update project metadata  
-- `DELETE /api/v1/projects/{id_or_slug}` → Delete project  
+
+- `POST /api/v1/projects` → Create project metadata
+- `PUT /api/v1/projects/{id_or_slug}` → Update project metadata
+- `DELETE /api/v1/projects/{id_or_slug}` → Delete project
 - `PATCH /api/v1/projects/{id_or_slug}/publish` → Publish/unpublish
 
-- `POST /api/v1/project-details/{project_id}` → Add/update markdown content  
-- `PUT /api/v1/project-details/{project_id}` → Update markdown content  
-- `DELETE /api/v1/project-details/{project_id}` → Delete  
+- `POST /api/v1/project-details/{project_id}` → Add/update markdown content
+- `PUT /api/v1/project-details/{project_id}` → Update markdown content
+- `DELETE /api/v1/project-details/{project_id}` → Delete
 
-***
+---
 
 ### **User & Auth (Admin Management Only)**
 
-**Admin:**  
-- `POST /api/v1/auth/login` → Admin login, returns JWT  
-- `POST /api/v1/users` → Create admin/moderator user  
-- `GET /api/v1/users` → List users *(optional)*  
-- `GET /api/v1/users/{user_id}` → Get user details  
-- `PUT /api/v1/users/{user_id}` → Update user details or role  
-- `DELETE /api/v1/users/{user_id}` → Delete a user  
+**Admin:**
+
+- `POST /api/v1/auth/login` → Admin login, returns JWT
+- `POST /api/v1/users` → Create admin/moderator user
+- `GET /api/v1/users` → List users _(optional)_
+- `GET /api/v1/users/{user_id}` → Get user details
+- `PUT /api/v1/users/{user_id}` → Update user details or role
+- `DELETE /api/v1/users/{user_id}` → Delete a user
+
+### DOCKER FILES CHECKSUM ( SHA256 )
+
+- build hash for 1.2.5 => 0be36798dc0000ecaa540ba7ea1fb010c9f58e01f29495ac8d7c8e6d9a573317
+
+- base image hash for 1.2.5 => N/A
+
+- build hash for 1.2.6 => ff77cedfd1ca9fa3f14e545bd6bd02c2c322f810bf5d1baf68fc5e1c90b96d2e
+
+- base image hash for 1.2.6 => 2369e04b10806f5d8aeeb70ecdbd68d24608b5d201229e3f380a69e9fcb4c9cd
+
+### Checking Digest
+
+- if used hub
+  `docker images --digests`
+
+- the running containers
+    `docker inspect -f '{{.Image}}' <container_id>`
