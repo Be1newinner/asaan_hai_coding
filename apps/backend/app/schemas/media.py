@@ -99,3 +99,9 @@ class MediaReadList(BaseModel):
 # Delete schema (just an identifier)
 class MediaDelete(BaseModel):
     id: UUID
+
+
+# Read for Courses
+class MediaWithUrl(BaseModel):
+    id: UUID
+    url: str

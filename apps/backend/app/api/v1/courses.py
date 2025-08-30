@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -23,7 +23,12 @@ async def list_courses(
 
 @router.get("/{course_id}", response_model=CourseRead)
 async def get_course(course_id: UUID, db: AsyncSession = Depends(get_async_session)):
-    return await course_crud.getDetailed(db, course_id)
+    course = await course_crud.getDetailed(db, course_id)
+    if not course:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Course not found"
+        )
+    return course
 
 
 # ─── Admin endpoints ─────────────────────────────────────────────
@@ -32,7 +37,9 @@ async def create_course(
     data: CourseCreate,
     db: AsyncSession = Depends(get_async_session),
 ):
-    return await course_crud.create(db, data)
+    new_course = await course_crud.create(db, data)
+    detailed_course = await course_crud.getDetailed(db, new_course.id)
+    return detailed_course
 
 
 @router.post(
@@ -57,11 +64,24 @@ async def update_course(
 ):
     course = await course_crud.get(db, course_id)
     if not course:
-        return
-    return await course_crud.update(db, course, data)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Course not found"
+        )
+
+    await course_crud.update(db, course, data)
+    updated_course = await course_crud.getDetailed(db, course_id)
+    if not updated_course:
+        raise HTTPException(
+            status_code=404, detail="Course could not be found after update"
+        )
+    return updated_course
 
 
-@router.delete("/{course_id}", dependencies=[Depends(get_current_admin)])
+@router.delete(
+    "/{course_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(get_current_admin)],
+)
 async def delete_course(course_id: UUID, db: AsyncSession = Depends(get_async_session)):
     await course_crud.delete(db, course_id)
-    return {"ok": True}
+    return

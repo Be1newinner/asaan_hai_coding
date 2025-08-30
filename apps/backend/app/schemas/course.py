@@ -3,6 +3,7 @@ from typing import List
 from pydantic import BaseModel, Field
 from app.schemas.base import ORMBase, TimestampMixin
 from app.schemas.section import SectionRead
+from app.schemas.media import MediaWithUrl
 
 
 # ─── WRITE ──────────────────────────────────────────
@@ -12,6 +13,7 @@ class CourseCreate(BaseModel):
     instructor_id: UUID | None = None
     difficulty_level: str | None = Field(None, max_length=20)
     is_published: bool = False
+    image_id: UUID | None
 
 
 class CourseUpdate(BaseModel):
@@ -20,6 +22,7 @@ class CourseUpdate(BaseModel):
     instructor_id: UUID | None = None
     difficulty_level: str | None = Field(None, max_length=20)
     is_published: bool | None = None
+    image_id: UUID | None
 
 
 class InstructorRead(BaseModel):
@@ -36,6 +39,7 @@ class CourseReadBase(ORMBase, TimestampMixin):
     difficulty_level: str | None
     is_published: bool
     instructor: InstructorRead
+    image: MediaWithUrl | None
 
 
 class CourseRead(CourseReadBase):

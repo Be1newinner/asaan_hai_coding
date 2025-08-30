@@ -1,8 +1,9 @@
 from __future__ import annotations
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
+
 
 from sqlalchemy import (
     String,
@@ -13,11 +14,14 @@ from sqlalchemy import (
     CheckConstraint,
     UniqueConstraint,
 )
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy import Enum as SAEnum
 
 from app.db.base import BaseModel
+
+if TYPE_CHECKING:
+    from app.models.course import Course
 
 
 class MediaType(str, Enum):
@@ -90,4 +94,10 @@ class Media(BaseModel):
             "(resource_type = 'image' AND duration_ms IS NULL) OR resource_type = 'video'",
             name="image_no_duration",
         ),
+    )
+
+    course: Mapped["Course | None"] = relationship(
+        back_populates="image",
+        uselist=False,
+        lazy="select",
     )

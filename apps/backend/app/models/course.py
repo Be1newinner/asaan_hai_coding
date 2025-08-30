@@ -13,6 +13,7 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 if TYPE_CHECKING:
     from app.models.section import Section
     from app.models.user import User
+    from app.models.media import Media
 
 
 class Course(BaseModel):
@@ -38,6 +39,12 @@ class Course(BaseModel):
     )
     is_published: Mapped[bool] = mapped_column(Boolean, default=False)
     difficulty_level: Mapped[str | None] = mapped_column(String(20))
+    image_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("media.id", ondelete="SET NULL"),
+        nullable=True,
+        unique=True,  # this is one to one to courses
+    )
 
     # relations
     sections: Mapped[list["Section"]] = relationship(
@@ -48,4 +55,10 @@ class Course(BaseModel):
     instructor: Mapped["User | None"] = relationship(
         back_populates="courses", lazy="selectin"
     )
-    images: Mapped[str | None] = mapped_column(String(255))
+    image: Mapped["Media | None"] = relationship(
+        back_populates="course",
+        uselist=False,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        lazy="joined",
+    )

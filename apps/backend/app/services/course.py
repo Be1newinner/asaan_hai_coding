@@ -1,16 +1,17 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Load, selectinload
+from sqlalchemy.orm import Load, selectinload, joinedload
 
 from app.services.base import CRUDBase
 from app.models.course import Course
 from app.models.section import Section
 from app.models.user import User
+from app.models.media import Media
 from app.schemas.course import CourseCreate, CourseUpdate
 
 from uuid import UUID
 
-from typing import Iterable, Any
+# from typing import Iterable, Any
 
 
 class CourseCRUD(CRUDBase[Course, CourseCreate, CourseUpdate]):
@@ -41,6 +42,7 @@ class CourseCRUD(CRUDBase[Course, CourseCreate, CourseUpdate]):
             selectinload(self.model.instructor).load_only(
                 User.id, User.full_name, User.email
             ),
+            joinedload(self.model.image).load_only(Media.id, Media.url),
         )
         return await super().get(db, obj_id, forced)
 
