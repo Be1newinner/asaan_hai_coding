@@ -104,4 +104,4 @@ class MediaDelete(BaseModel):
 # Read for Courses
 class MediaWithUrl(BaseModel):
     id: UUID
-    url: str
+    secure_url: str

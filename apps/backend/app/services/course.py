@@ -42,7 +42,7 @@ class CourseCRUD(CRUDBase[Course, CourseCreate, CourseUpdate]):
             selectinload(self.model.instructor).load_only(
                 User.id, User.full_name, User.email
             ),
-            joinedload(self.model.image).load_only(Media.id, Media.url),
+            joinedload(self.model.image).load_only(Media.id, Media.secure_url),
         )
         return await super().get(db, obj_id, forced)
 

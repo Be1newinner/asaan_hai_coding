@@ -22,6 +22,8 @@ from app.db.base import BaseModel
 
 if TYPE_CHECKING:
     from app.models.course import Course
+    from app.models.media import Media
+    from app.models.project import Project
 
 
 class MediaType(str, Enum):
@@ -98,6 +100,11 @@ class Media(BaseModel):
 
     course: Mapped["Course | None"] = relationship(
         back_populates="image",
+        uselist=False,
+        lazy="select",
+    )
+    project: Mapped["Project | None"] = relationship(
+        back_populates="thumbnail_image",
         uselist=False,
         lazy="select",
     )

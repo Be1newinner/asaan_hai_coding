@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.base import CRUDBase
@@ -11,6 +11,8 @@ from app.schemas.project import (
     ProjectDetailUpdate,
 )
 
+from app.models.media import Media
+
 
 class ProjectCRUD(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
     """Project-level helpers (publish filter, etc.)."""
@@ -21,12 +23,22 @@ class ProjectCRUD(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
             .where(self.model.is_published.is_(True))
             .offset(skip)
             .limit(limit)
+            # .options(
+            #     joinedload(self.model.thumbnail_image).load_only(
+            #         Media.id, Media.secure_url
+            #     ),
+            # )
         )
         res = await db.execute(stmt)
         return res.scalars().all()
 
     async def get_detailed(self, db: AsyncSession, obj_id: int):
-        forced = (selectinload(Project.detail),)
+        forced = (
+            selectinload(Project.detail),
+            joinedload(self.model.thumbnail_image).load_only(
+                Media.id, Media.secure_url
+            ),
+        )
         return await self.get(db, obj_id, forced)
 
 

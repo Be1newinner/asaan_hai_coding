@@ -1,12 +1,15 @@
 from app.db.base import BaseModel
-from sqlalchemy import String, Text, Boolean, TIMESTAMP
+from sqlalchemy import String, Text, Boolean, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, timezone
 from app.models.project_detail import ProjectDetail
+from uuid import UUID, uuid4
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from typing import TYPE_CHECKING
 
-# if TYPE_CHECKING:
+if TYPE_CHECKING:
+    from app.models.media import Media
 
 
 class Project(BaseModel):
@@ -17,7 +20,12 @@ class Project(BaseModel):
     description: Mapped[str | None] = mapped_column(Text)
     client_name: Mapped[str | None] = mapped_column(String(100))
     project_type: Mapped[str | None] = mapped_column(String(50))
-    thumbnail_url: Mapped[str | None] = mapped_column(String(255))
+    image_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("media.id", ondelete="SET NULL"),
+        nullable=True,
+        unique=True,  # this is one to one
+    )
     live_demo_url: Mapped[str | None] = mapped_column(String(255))
     github_url: Mapped[str | None] = mapped_column(String(255))
     is_published: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -33,4 +41,11 @@ class Project(BaseModel):
 
     detail: Mapped["ProjectDetail"] = relationship(
         back_populates="project", uselist=False, cascade="all, delete-orphan"
+    )
+    thumbnail_image: Mapped["Media | None"] = relationship(
+        back_populates="project",
+        uselist=False,
+        single_parent=True,
+        cascade="all, delete-orphan",
+        lazy="joined",
     )

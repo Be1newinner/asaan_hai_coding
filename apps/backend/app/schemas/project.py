@@ -3,6 +3,8 @@ from typing import Optional, Any
 
 from pydantic import BaseModel, Field
 from app.schemas.base import ORMBase, TimestampMixin
+from app.schemas.media import MediaWithUrl
+from uuid import UUID
 
 
 # ──────────────────────────────
@@ -28,10 +30,10 @@ class ProjectCreate(BaseModel):
     description: str | None = None
     client_name: str | None = Field(None, max_length=100)
     project_type: str | None = Field(None, max_length=50)
-    thumbnail_url: str | None = Field(None, max_length=255)
     live_demo_url: str | None = Field(None, max_length=255)
     github_url: str | None = Field(None, max_length=255)
     is_published: bool = False
+    image_id: UUID | None
 
 
 class ProjectUpdate(BaseModel):
@@ -39,10 +41,10 @@ class ProjectUpdate(BaseModel):
     description: str | None = None
     client_name: str | None = Field(None, max_length=100)
     project_type: str | None = Field(None, max_length=50)
-    thumbnail_url: str | None = Field(None, max_length=255)
     live_demo_url: str | None = Field(None, max_length=255)
     github_url: str | None = Field(None, max_length=255)
     is_published: bool | None = None
+    image_id: UUID | None
 
 
 class ProjectRead(ORMBase, TimestampMixin):
@@ -51,10 +53,11 @@ class ProjectRead(ORMBase, TimestampMixin):
     description: str | None
     client_name: str | None
     project_type: str | None
-    thumbnail_url: str | None
     live_demo_url: str | None
     github_url: str | None
     is_published: bool
+    thumbnail_image: MediaWithUrl | None
+
 
 class ProjectReadDetailed(ProjectRead):
     detail: Optional[Any]
