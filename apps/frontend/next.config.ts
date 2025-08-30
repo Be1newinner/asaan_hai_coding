@@ -23,9 +23,16 @@ const nextConfig: NextConfig = {
   experimental: { mdxRs: false },
   reactStrictMode: true,
   eslint: { ignoreDuringBuilds: true },
-  // Optional: if TS complains about types for plugin tuples, add a ts-ignore:
-  // (Known mismatch while @next/mdx types catch up)
-  // @ts-ignore
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/decvnwos9/image/upload/**",
+      },
+    ],
+  },
 };
 
 export default withMDX(nextConfig);

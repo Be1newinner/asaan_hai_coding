@@ -1,24 +1,24 @@
-import Image from 'next/image';
-import React from 'react';
-import { CourseRead } from '@/types/api';
+import Image from "next/image";
+import React from "react";
+import { CourseRead } from "@/types/api";
 
 interface CourseHeroSectionProps {
   course: CourseRead;
 }
 
 const CourseHeroSection: React.FC<CourseHeroSectionProps> = ({ course }) => {
-  const imageUrl = course.image_url || '/placeholder.jpg';
+  // const imageUrl = "/placeholder.jpg";
 
   return (
-    <section className="relative w-full h-96 overflow-hidden rounded-lg shadow-lg mb-8 text-black">
-      <Image
+    <section className="relative w-full h-96 overflow-hidden rounded-lg shadow-lg mb-8 text-black bg-slate-300">
+      {/* <Image
         src={imageUrl}
         alt={course.title}
         layout="fill"
         objectFit="cover"
         className="absolute inset-0 z-0"
         priority
-      />
+      /> */}
       <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10 flex items-end p-8">
         <div className="text-foreground max-w-3xl">
           <h1 className="text-4xl md:text-5xl font-extrabold mb-2 leading-tight">

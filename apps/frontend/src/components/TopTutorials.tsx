@@ -43,7 +43,7 @@ export default function TopTutorials() {
   }
 
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900/30">
+    <section className="px-4 sm:px-6 lg:px-8 bg-slate-900/30">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
@@ -61,11 +61,11 @@ export default function TopTutorials() {
           {tutorials?.map((tutorial) => (
             <Card
               key={tutorial.id}
-              className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all duration-300 group"
+              className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-all duration-300 group flex flex-col"
             >
               <div className="relative overflow-hidden rounded-t-lg">
                 <Image
-                  src={tutorial.image_url || "/placeholder.svg"}
+                  src={tutorial.image?.secure_url || "/placeholder.svg"}
                   alt={tutorial.title}
                   width={300}
                   height={200}
@@ -78,7 +78,7 @@ export default function TopTutorials() {
                 </div>
               </div>
 
-              <CardHeader>
+              <CardHeader className="flex-auto">
                 <CardTitle className="text-white group-hover:text-purple-400 transition-colors">
                   {tutorial.title}
                 </CardTitle>

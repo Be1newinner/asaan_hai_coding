@@ -108,7 +108,10 @@ export interface CourseRead {
   instructor_id: string;
   difficulty_level: string;
   is_published: boolean;
-  image_url?: string;
+  image?: {
+    id: string;
+    secure_url: string;
+  };
   category?: string;
   sections: SectionRead[];
 }
@@ -161,7 +164,10 @@ export interface ProjectRead {
   description?: string | null;
   client_name?: string | null;
   project_type?: string | null;
-  thumbnail_url?: string | null;
+  thumbnail_image?: {
+    id: string;
+    secure_url: string;
+  } | null;
   live_demo_url?: string | null;
   github_url?: string | null;
   is_published: boolean;
