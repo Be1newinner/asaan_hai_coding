@@ -1,150 +1,141 @@
-import { notFound } from "next/navigation";
+"use client";
+import { notFound, useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExternalLink, Github, ArrowLeft, Calendar, User } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { projectsService } from "@/services/projects";
+import { slugToId } from "@/utils/slug";
 
-const projects = {
-  "ecommerce-platform": {
-    title: "E-Commerce Platform",
-    description:
-      "A comprehensive e-commerce solution built with Next.js 15, featuring modern design, secure payments, and advanced admin capabilities.",
-    longDescription: `This full-stack e-commerce platform represents the pinnacle of modern web development, combining cutting-edge technologies with user-centric design principles. Built with Next.js 15 and the App Router, it delivers exceptional performance and SEO optimization.
+export default function ProjectPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const id = parseInt(slugToId(slug) || "-1");
+  console.log({ id });
 
-The platform features a complete shopping experience with product browsing, advanced filtering, secure checkout with Stripe integration, and comprehensive order management. The admin dashboard provides powerful tools for inventory management, order processing, and analytics.
+  if (!id) {
+    return notFound();
+  }
 
-Key technical highlights include server-side rendering for optimal performance, TypeScript for type safety, Tailwind CSS for responsive design, and a robust authentication system. The application is fully responsive and optimized for both desktop and mobile experiences.`,
-    image:
-      "/placeholder.svg?height=400&width=800&text=E-Commerce+Platform+Hero",
-    technologies: [
-      "Next.js 15",
-      "TypeScript",
-      "Tailwind CSS",
-      "Stripe",
-      "Prisma",
-      "PostgreSQL",
-    ],
-    category: "Web Development",
-    liveUrl: "https://example-ecommerce.vercel.app",
-    githubUrl: "https://github.com/example/ecommerce-platform",
-    createdAt: "2024-01-15",
-    author: "ASAAN HAI CODING Team",
-    gallery: [
-      "/placeholder.svg?height=300&width=500&text=Homepage+Design",
-      "/placeholder.svg?height=300&width=500&text=Product+Page",
-      "/placeholder.svg?height=300&width=500&text=Shopping+Cart",
-      "/placeholder.svg?height=300&width=500&text=Admin+Dashboard",
-    ],
-    features: [
-      "User Authentication & Authorization",
-      "Product Catalog with Advanced Filtering",
-      "Shopping Cart & Wishlist",
-      "Secure Payment Processing with Stripe",
-      "Order Management System",
-      "Admin Dashboard with Analytics",
-      "Responsive Design",
-      "SEO Optimized",
-    ],
-  },
-};
+  const {
+    data: projectDetail,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["project_detail_", id],
+    queryFn: () => projectsService.getProject(id),
+    enabled: !!id,
+  });
 
-interface ProjectPageProps {
-  params: {
-    slug: string;
-  };
-}
+  if (isLoading) {
+    return (
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900/30 text-center text-white">
+        <p>Loading projects...</p>
+      </section>
+    );
+  }
 
-export default function ProjectPage({ params }: ProjectPageProps) {
-  const project = projects[params.slug as keyof typeof projects];
-
-  if (!project) {
-    notFound();
+  if (error) {
+    return (
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900/30 text-center text-red-500">
+        <p>Failed to load projects: {error.message}</p>
+      </section>
+    );
   }
 
   return (
-    <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Back Button */}
-        <div className="mb-8">
-          <Button
-            asChild
-            variant="outline"
-            className="border-slate-600 hover:bg-slate-800"
-          >
-            <Link href="/projects" className="flex items-center space-x-2">
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back to Projects</span>
-            </Link>
-          </Button>
-        </div>
-
+    <div className="min-h-screen py-4 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1536] mx-auto">
         {/* Hero Section */}
         <div className="mb-12">
           <div className="relative overflow-hidden rounded-xl mb-8">
             <Image
-              src={project.image || "/placeholder.svg"}
-              alt={project.title}
-              width={800}
-              height={400}
-              className="w-full h-[400px] object-cover"
+              src={
+                projectDetail?.thumbnail_image?.secure_url || "/placeholder.svg"
+              }
+              alt={projectDetail?.title || ""}
+              width={2000}
+              height={633}
+              className="w-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+            {/* Back Button */}
+            <div className="absolute top-28 left-4 z-10">
+              <Button
+                asChild
+                variant="outline"
+                className="border-slate-600 bg-slate-800"
+              >
+                <Link href="/projects" className="flex items-center space-x-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>Back</span>
+                </Link>
+              </Button>
+            </div>
+            {/* <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div> */}
           </div>
 
           <div className="space-y-6">
             <div className="flex items-center space-x-4 text-sm text-slate-400">
               <div className="flex items-center space-x-1">
                 <Calendar className="h-4 w-4" />
-                <span>{new Date(project.createdAt).toLocaleDateString()}</span>
+                <span>
+                  {new Date(
+                    String(projectDetail?.created_at) || ""
+                  ).toLocaleDateString()}
+                </span>
               </div>
               <div className="flex items-center space-x-1">
                 <User className="h-4 w-4" />
-                <span>{project.author}</span>
+                <span>{"Vijay Kumar"}</span>
               </div>
               <Badge className="bg-blue-600 hover:bg-blue-700">
-                {project.category}
+                {/* {projectDetail?.ca} */}
               </Badge>
             </div>
 
             <h1 className="text-4xl sm:text-5xl font-bold">
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                {project.title}
+                {projectDetail?.title}
               </span>
             </h1>
 
             <p className="text-xl text-slate-300 leading-relaxed">
-              {project.description}
+              {projectDetail?.description}
             </p>
 
             <div className="flex flex-wrap gap-3">
-              <Button asChild className="bg-blue-600 hover:bg-blue-700">
-                <Link
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center space-x-2"
+              {projectDetail?.live_demo_url && (
+                <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                  <Link
+                    href={projectDetail?.live_demo_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span>View Live Site</span>
+                  </Link>
+                </Button>
+              )}
+              {projectDetail?.github_url && (
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-slate-600 hover:bg-slate-800"
                 >
-                  <ExternalLink className="h-4 w-4" />
-                  <span>View Live Site</span>
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="border-slate-600 hover:bg-slate-800"
-              >
-                <Link
-                  href={project.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center space-x-2"
-                >
-                  <Github className="h-4 w-4" />
-                  <span>View Source Code</span>
-                </Link>
-              </Button>
+                  <Link
+                    href={projectDetail?.github_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2"
+                  >
+                    <Github className="h-4 w-4" />
+                    <span>View Source Code</span>
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -154,28 +145,23 @@ export default function ProjectPage({ params }: ProjectPageProps) {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-12">
             {/* Description */}
-            <Card className="bg-slate-900/50 border-slate-800">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-bold mb-6 text-white">
-                  Project Overview
-                </h2>
-                <div className="prose prose-invert max-w-none">
-                  {project.longDescription
-                    .split("\n\n")
-                    .map((paragraph, index) => (
-                      <p
-                        key={index}
-                        className="text-slate-300 leading-relaxed mb-4"
-                      >
-                        {paragraph}
-                      </p>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
+            {projectDetail?.detail?.markdown_content && (
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardContent className="p-8">
+                  <h2 className="text-2xl font-bold mb-6 text-white">
+                    Project Overview
+                  </h2>
+                  <div className="prose prose-invert max-w-none">
+                    <p className="text-slate-300 leading-relaxed mb-4">
+                      {projectDetail?.detail?.markdown_content.split("\n\n")}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Gallery */}
-            <Card className="bg-slate-900/50 border-slate-800">
+            {/* <Card className="bg-slate-900/50 border-slate-800">
               <CardContent className="p-8">
                 <h2 className="text-2xl font-bold mb-6 text-white">
                   Project Gallery
@@ -197,50 +183,54 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                   ))}
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
 
           {/* Sidebar */}
           <div className="space-y-8">
             {/* Technologies */}
-            <Card className="bg-slate-900/50 border-slate-800">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-4 text-white">
-                  Technologies Used
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {project.technologies.map((tech) => (
-                    <Badge
-                      key={tech}
-                      variant="secondary"
-                      className="bg-slate-800 text-slate-300"
-                    >
-                      {tech}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {projectDetail?.technologies && (
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold mb-4 text-white">
+                    Technologies Used
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {projectDetail.technologies?.map((tech) => (
+                      <Badge
+                        key={tech}
+                        variant="secondary"
+                        className="bg-slate-800 text-slate-300"
+                      >
+                        {tech}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Features */}
-            <Card className="bg-slate-900/50 border-slate-800">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-4 text-white">
-                  Key Features
-                </h3>
-                <ul className="space-y-2">
-                  {project.features.map((feature, index) => (
-                    <li
-                      key={index}
-                      className="flex items-start space-x-2 text-slate-300"
-                    >
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            {projectDetail?.features && (
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold mb-4 text-white">
+                    Key Features
+                  </h3>
+                  <ul className="space-y-2">
+                    {projectDetail.features?.map((feature, index) => (
+                      <li
+                        key={index}
+                        className="flex items-start space-x-2 text-slate-300"
+                      >
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>

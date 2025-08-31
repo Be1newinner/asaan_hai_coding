@@ -15,41 +15,41 @@ import { useQuery } from "@tanstack/react-query";
 import { projectsService } from "@/services/projects";
 import { titleToSlug } from "@/utils/slug";
 
-const featuredProjects = [
-  {
-    id: 1,
-    title: "E-Commerce Platform",
-    description:
-      "A full-stack e-commerce solution built with Next.js, featuring user authentication, payment integration, and admin dashboard.",
-    image: "/placeholder.svg?height=200&width=300&text=E-Commerce+Platform",
-    technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Stripe"],
-    liveUrl: "#",
-    githubUrl: "#",
-    slug: "ecommerce-platform",
-  },
-  {
-    id: 2,
-    title: "Task Management App",
-    description:
-      "A collaborative task management application with real-time updates, drag-and-drop functionality, and team collaboration features.",
-    image: "/placeholder.svg?height=200&width=300&text=Task+Management+App",
-    technologies: ["React", "Node.js", "Socket.io", "MongoDB"],
-    liveUrl: "#",
-    githubUrl: "#",
-    slug: "task-management-app",
-  },
-  {
-    id: 3,
-    title: "Weather Dashboard",
-    description:
-      "A beautiful weather dashboard with location-based forecasts, interactive maps, and detailed weather analytics.",
-    image: "/placeholder.svg?height=200&width=300&text=Weather+Dashboard",
-    technologies: ["Vue.js", "Python", "FastAPI", "Chart.js"],
-    liveUrl: "#",
-    githubUrl: "#",
-    slug: "weather-dashboard",
-  },
-];
+// const featuredProjects = [
+//   {
+//     id: 1,
+//     title: "E-Commerce Platform",
+//     description:
+//       "A full-stack e-commerce solution built with Next.js, featuring user authentication, payment integration, and admin dashboard.",
+//     image: "/placeholder.svg?height=200&width=300&text=E-Commerce+Platform",
+//     technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Stripe"],
+//     liveUrl: "#",
+//     githubUrl: "#",
+//     slug: "ecommerce-platform",
+//   },
+//   {
+//     id: 2,
+//     title: "Task Management App",
+//     description:
+//       "A collaborative task management application with real-time updates, drag-and-drop functionality, and team collaboration features.",
+//     image: "/placeholder.svg?height=200&width=300&text=Task+Management+App",
+//     technologies: ["React", "Node.js", "Socket.io", "MongoDB"],
+//     liveUrl: "#",
+//     githubUrl: "#",
+//     slug: "task-management-app",
+//   },
+//   {
+//     id: 3,
+//     title: "Weather Dashboard",
+//     description:
+//       "A beautiful weather dashboard with location-based forecasts, interactive maps, and detailed weather analytics.",
+//     image: "/placeholder.svg?height=200&width=300&text=Weather+Dashboard",
+//     technologies: ["Vue.js", "Python", "FastAPI", "Chart.js"],
+//     liveUrl: "#",
+//     githubUrl: "#",
+//     slug: "weather-dashboard",
+//   },
+// ];
 
 export default function TopProjects() {
   const {
@@ -102,7 +102,9 @@ export default function TopProjects() {
             >
               <div className="relative overflow-hidden rounded-t-lg">
                 <Image
-                  src={project.thumbnail_image?.secure_url || "/placeholder.svg"}
+                  src={
+                    project.thumbnail_image?.secure_url || "/placeholder.svg"
+                  }
                   alt={project.title}
                   width={900}
                   height={600}

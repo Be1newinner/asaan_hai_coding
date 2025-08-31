@@ -174,6 +174,8 @@ export interface ProjectRead {
   created_at?: string | null;
   updated_at?: string | null;
   detail?: ProjectDetailRead | null;
+  technologies: string[] | null;
+  features: string[] | null;
 }
 
 export interface ProjectUpdate {
