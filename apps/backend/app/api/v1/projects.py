@@ -87,6 +87,7 @@ async def get_project_detail(
         raise HTTPException(status_code=404, detail="Detail not found")
     return detail
 
+
 # ─── Project Detail ADMIN ROUTES (markdown) ───────────────────────────────────
 @router.post(
     "/{project_id}/detail",

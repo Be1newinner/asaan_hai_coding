@@ -106,27 +106,21 @@ def format_other_titles_with_numbers(
 # ---------- Prompt builder ----------
 
 
-def course_prompt(course_dic: Any, lesson_id: int) -> str:
+def course_prompt(course_dic: Any, lesson_id: int, max_token: int) -> str:
     title = _get(course_dic, "title", "").strip()
     description = _get(course_dic, "description", "").strip()
     sections = get_sections(course_dic)
 
     lesson_title = get_lesson_title_by_id(sections, lesson_id)
     if not lesson_title:
-        # Keep your fail-fast contract (raise or return the exact string depending on your pipeline)
         raise ValueError("ERROR: lesson_id not found in course sections.")
 
-    # Build the numbered list of all other lesson titles
     other_titles_num = format_other_titles_with_numbers(
         sections, lesson_id, prefix="Lesson"
     )
     other_titles_block = (
         "\n- " + "\n- ".join(other_titles_num) if other_titles_num else " (none)"
     )
-    # print(other_titles_block)
-
-    # (Optional) Include the full outline for scope awareness without reproducing it verbatim
-    # sections_str = str(sections)  # Uncomment if you want to show outline in the prompt
 
     return f"""You are an expert course content creator. Produce a detailed, easy-to-understand lesson in Markdown for developers.
 
@@ -148,7 +142,7 @@ def course_prompt(course_dic: Any, lesson_id: int) -> str:
     - Sections (in this order): Overview, Key Concepts, Step-by-step, Code Examples, Pitfalls, Exercises.
     - Code: Runnable, minimal examples with language tags (js, ts, py, sql, bash). Favor realistic scenarios (REST/GraphQL APIs, DB access via Prisma/SQLAlchemy/Mongoose, Redis caching). Brief notes for Docker/Kubernetes when relevant.
     - Style: Clear, concise, practical; use bullet points where helpful.
-    - Length: ~900–1400 words.
+    - Strict Length in Tokens: ~${max_token-600}–${max_token-300} words.
     - Constraints: No external links, no HTML, no placeholders.
     - Return only the lesson content as Markdown. No JSON, no preface, no trailing commentary.
 

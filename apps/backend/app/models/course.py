@@ -13,7 +13,7 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 if TYPE_CHECKING:
     from app.models.section import Section
     from app.models.user import User
-    from app.models.media import Media
+    from app.models.media import Media, CourseMedias
 
 
 class Course(BaseModel):
@@ -30,7 +30,8 @@ class Course(BaseModel):
         nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), default=datetime.now
+        TIMESTAMP(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
     )
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
@@ -61,4 +62,20 @@ class Course(BaseModel):
         single_parent=True,
         cascade="all, delete-orphan",
         lazy="joined",
+    )
+    medias: Mapped[list["CourseMedias"]] = relationship(
+        "CourseMedias",
+        back_populates="course",
+        cascade="all, delete-orphan",
+        single_parent=True,
+        lazy="selectin",
+    )
+
+    gallery: Mapped[list["Media"]] = relationship(
+        "Media",
+        secondary="course_medias",
+        primaryjoin="Course.id == foreign(CourseMedias.course_id)",
+        secondaryjoin="Media.id == foreign(CourseMedias.image_id)",
+        viewonly=True,
+        lazy="selectin",
     )

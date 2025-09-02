@@ -1,266 +1,189 @@
-## PGSQL Tables
+## Overview
 
-#### **1. `users` table**
+This repository contains the backend for Asaan Hai Coding, a production-ready FastAPI service with async SQLAlchemy 2.0, PostgreSQL, Alembic migrations, JWT-based auth, media management via Cloudinary, and an AI content pipeline using Google Gemini for generating course lessons. The service exposes REST APIs grouped by domain (auth, users, courses, sections, lessons, projects, media, AI handler) and ships with Docker-based local/dev flows and private deployment scripts, including GitHub release automation for image artifacts.
 
-_Purpose: Stores all user account information._
+## Tech stack
 
-```sql
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+- FastAPI with lifespan hooks, custom exception handlers, CORS, modular routers, and typed Pydantic v2 schemas.
+- Async SQLAlchemy 2.0 ORM with asyncpg driver, connection pooling, session dependency, and eager loading patterns (selectinload, joinedload).
+- PostgreSQL with Alembic migrations, async migration env, and compare_type/server_default enabled.
+- Authlib JWT for stateless access/refresh tokens, bcrypt password hashing, and role-based route guards (ADMIN).
+- Cloudinary media service with secure uploads, video chunking for large files, constraints, and DB synchronization.
+- Google Gemini (google-genai) async integration to generate lesson content with strict prompt scoping.
+- Docker (3.13-slim image), scripts for private server deployment (compressed/uncompressed), and GitHub release uploader for image tarballs.
 
-CREATE TYPE user_role AS ENUM ('ADMIN', 'USER', 'MODERATOR');
+## Environment
 
-CREATE TYPE user_gender AS ENUM ('MALE', 'FEMALE', 'OTHER');
+Environment is loaded via pydantic-settings with .env, using Settings() with lru_cache and validation. Required keys include:
 
-CREATE TABLE users (
-    user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    full_name VARCHAR(255) NOT NULL,
-    contact VARCHAR(20),
-    role user_gender,
-    role user_role NOT NULL DEFAULT 'USER',
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-```
+- DATABASE_URL
+- SECRET_KEY
+- ACCESS_TOKEN_EXPIRE_MINUTES
+- REFRESH_TOKEN_EXPIRE_MINUTES
+- GEMINI_API_KEY
+- GEMINI_MODEL (optional; defaults to gemini-2.5-flash)
+- BACKEND_CORS_ORIGINS (JSON or CSV)
+- CLOUDINARY_URL (Cloudinary SDK also pre-configured with fixed credentials block)
 
-#### **2. `courses` table**
+Note: The code currently calls cloudinary.config with explicit values in get_settings(), which will override environment values; align this with CLOUDINARY_URL for production hygiene.
 
-_Purpose: The main catalog of all courses on the platform._
+## Project structure
 
-```sql
-CREATE TABLE courses (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    instructor_id INT REFERENCES users(user_id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    is_published BOOLEAN DEFAULT FALSE,
-    difficulty_level VARCHAR(20)
-);
+- app/main.py: FastAPI app creation with lifespan (init_db), custom exception handlers, and CORS, registering v1 routers at docs_url="/".
+- app/core: settings, security (bcrypt, Authlib JWT), environment validation.
+- app/db: SQLAlchemy base, async engine/session, app startup seeding for first superuser.
+- app/models: SQLAlchemy models (User, Course, Section, Lesson, Media, Project, ProjectDetail) with constraints and relationships.
+- app/schemas: Pydantic v2 models for request/response, including read composites with nested relations.
+- app/services: CRUD base class with async operations, domain CRUDs, media service with Cloudinary integration, AI handler orchestrating Gemini prompt and lesson updates.
+- app/api/v1: Routers for auth, users, courses, sections, lessons, projects, media, and AI handler; deps include JWT extraction and role guard.
+- alembic: Async migration environment, revisions establishing media table and one-to-one ties to courses/projects, and project_detail changes.
+- Dockerfile: python:3.13-slim, installs requirements, exposes 8000, uvicorn run command.
+- Scripts: docker_build_deploy_private.sh/.gz variant and github_release.sh with SHA256 sum and gh upload.
 
-CREATE INDEX idx_courses_instructor_id ON courses(instructor_id);
-```
+## Domain models
 
-#### **3. `sections` table**
+- User: UUID id, unique username/email, role enum (ADMIN/USER/MODERATOR), gender enum, bcrypt password_hash, relationships to courses.
+- Course: UUID id, instructor_id (users.id), difficulty_level, is_published, one-to-one image (media), sections relation.
+- Section: Autoincrement id, course_id, title, section_order with unique (course_id, section_order), lessons relation.
+- Lesson: Autoincrement id, section_id, title, content, lesson_order with unique (section_id, lesson_order).
+- Media: UUID id with strong constraints, unique public_id, resource_type enum (image/video), no duration for images, used as 1:1 with course/project images.
+- Project: Autoincrement id, metadata, one-to-one thumbnail_image (media), ProjectDetail as 1:1.
+- ProjectDetail: Autoincrement id, project_id unique, large content and tech_stack.
 
-_Purpose: Organizes courses into logical modules or units._
+## API routes
 
-```sql
-CREATE TABLE sections (
-    section_id SERIAL PRIMARY KEY,
-    course_id INT REFERENCES courses(id) ON DELETE CASCADE,
-    title VARCHAR(255) NOT NULL,
-    section_order INT NOT NULL,
-    UNIQUE (course_id, section_order)
-);
+Base prefix: /api/v1.
 
-CREATE INDEX idx_sections_course_id ON sections(course_id);
-```
+Auth
 
-#### **4. `lessons` table**
+- POST /auth/login → returns access_token (cookie sets refresh_token), OAuth2PasswordRequestForm with username/password.
+- POST /auth/refresh → refreshes access using refresh_token cookie.
+- PATCH /auth/reset-password → requires Authorization: Bearer access token; validates username from token.
+- GET /auth/me → current user details based on access token.
 
-_Purpose: Stores the core text-based tutorial content and links to its section._
+Users (ADMIN only)
 
-```sql
-CREATE TABLE lessons (
-    lesson_id SERIAL PRIMARY KEY,
-    section_id INT REFERENCES sections(section_id) ON DELETE CASCADE,
-    title VARCHAR(255) NOT NULL,
-    content TEXT,
-    lesson_order INT NOT NULL,
-    UNIQUE (section_id, lesson_order)
-);
+- GET /users, GET /users/{user_id}, POST /users, PUT /users/{user_id}, DELETE /users/{user_id}.
 
-CREATE INDEX idx_lessons_section_id ON lessons(section_id);
-```
+Courses
 
-#### **5. `video_snippets` table**
+- GET /courses → list published courses with instructor (id, name, email).
+- GET /courses/{course_id} → detailed course with sections → lessons, instructor, and image.
+- POST /courses (ADMIN), POST /courses/bulk (ADMIN), PUT /courses/{course_id} (ADMIN), DELETE /courses/{course_id} (ADMIN).
 
-_Purpose: Stores metadata for video content, linked to a specific lesson._
+Sections
 
-```sql
-CREATE TABLE video_snippets (
-    video_id SERIAL PRIMARY KEY,
-    lesson_id INT REFERENCES lessons(lesson_id) ON DELETE CASCADE,
-    url VARCHAR(255) NOT NULL,
-    description TEXT,
-    start_time_seconds INT,
-    end_time_seconds INT
-);
+- GET /sections?course_id=UUID → list sections filtered by course.
+- GET /sections/{section_id} → single section with lessons.
+- POST /sections (ADMIN), POST /sections/bulk (ADMIN), PUT /sections/{section_id} (ADMIN), DELETE /sections/{section_id} (ADMIN).
 
-CREATE INDEX idx_video_snippets_lesson_id ON video_snippets(lesson_id);
-```
+Lessons
 
-#### **6. `projects` table**
+- GET /lessons?section_id=int → list lessons filtered by section.
+- GET /lessons/{lesson_id} → single lesson.
+- POST /lessons (ADMIN), POST /lessons/bulk (ADMIN), PUT /lessons/{lesson_id} (ADMIN), DELETE /lessons/{lesson_id} (ADMIN).
 
-_Purpose: Stores metadata for the company's client showcase portfolio._
+Projects
 
-```sql
-CREATE TABLE projects (
-    project_id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    client_name VARCHAR(100),
-    project_type VARCHAR(50),
-    thumbnail_url VARCHAR(255),
-    live_demo_url VARCHAR(255),
-    github_url VARCHAR(255),
-    is_published BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-```
+- GET /projects → list published projects.
+- GET /projects/{project_id} → single project with thumbnail_image (media) and detail.
+- POST /projects (ADMIN), POST /projects/bulk (ADMIN), PUT /projects/{project_id} (ADMIN), DELETE /projects/{project_id} (ADMIN).
+- Project detail: GET /projects/{project_id}/detail; POST/PUT require ADMIN.
 
-#### **7. `project_details` table**
+Media
 
-_Purpose: Stores the large, detailed markdown content for a project in a separate table for performance optimization._
+- GET /media (ADMIN) with filters: resource_type, is_published, is_deleted, search; pagination via skip/limit; returns items + total.
+- GET /media/{media_id} → public, fetch media by id.
+- POST /media (ADMIN) → multipart upload to Cloudinary; validates content-type; supports large video uploads via chunking; writes to DB with constraints.
+- PATCH /media/{media_id} (ADMIN) → constraint-safe update.
+- DELETE /media/{media_id} (ADMIN) → deletes from Cloudinary and DB.
+- POST /media/{media_id}/soft-delete (ADMIN), POST /media/{media_id}/restore (ADMIN).
+- DELETE /media/{media_id}/delete-permanent (ADMIN) → Cloudinary + DB deletion with meaningful error mapping.
 
-```sql
-CREATE TABLE project_details (
-    project_id INT PRIMARY KEY REFERENCES projects(project_id) ON DELETE CASCADE,
-    markdown_content TEXT NOT NULL
-);
-```
+AI Handler (ADMIN only)
 
-## Folder Structure
+- POST /ai_handler/update_lesson?course_uid=UUID&lesson_id=int → fetches course, builds scoped prompt, calls Gemini, and updates the lesson’s content.
 
-```
-asaan_haic_coding/
-│
-├── app/
-│   ├── api/                 # API routers (split by domain)
-│   │   ├── v1/
-│   │   │   ├── users.py
-│   │   │   ├── courses.py
-│   │   │   ├── projects.py
-│   │   │   └── __init__.py
-│   │   └── __init__.py
-│   │
-│   ├── core/                # Core configs & startup logic
-│   │   ├── config.py
-│   │   ├── security.py      # Auth, password hashing, JWT
-│   │   └── __init__.py
-│   │
-│   ├── models/              # SQLAlchemy ORM models
-│   │   ├── user.py
-│   │   ├── course.py
-│   │   ├── project.py
-│   │   ├── section.py
-│   │   ├── lesson.py
-│   │   └── __init__.py
-│   │
-│   ├── schemas/             # Pydantic schemas (request/response)
-│   │   ├── user.py
-│   │   ├── course.py
-│   │   ├── project.py
-│   │   └── __init__.py
-│   │
-│   ├── crud/                # Data access layer functions
-│   │   ├── user.py
-│   │   ├── course.py
-│   │   ├── project.py
-│   │   └── __init__.py
-│   │
-│   ├── db/
-│   │   ├── base.py          # Base metadata
-│   │   ├── session.py       # DB session creation
-│   │   └── init_db.py
-│   │
-│   ├── main.py              # FastAPI app entry
-│   └── __init__.py
-│
-├── tests/                   # Unit and integration tests
-│   ├── test_users.py
-│   ├── test_courses.py
-│   └── test_projects.py
-│
-├── alembic/                 # DB migrations
-├── alembic.ini
-├── pyproject.toml / requirements.txt
-└── README.md
-```
+## Auth and security
 
-## **API Structure — Grouped by Domain**
+- Password hashing with bcrypt, verification via checkpw.
+- JWT tokens via Authlib JsonWebToken HS256, explicit claims include iss, aud, type metadata; decode functions return None on error.
+- Access token in Authorization header; refresh token stored as HttpOnly cookie (no domain specified in code).
+- Role-based access enforced via FastAPI dependency get_current_admin wrapping HTTPBearer token extraction and user lookup.
 
-### **Courses & Learning Content**
+## Caching, errors, CORS
 
-**Public:**
+- CORS configured with dynamic BACKEND_CORS_ORIGINS from env (CSV or JSON string).
+- Custom handlers for HTTPException, RequestValidationError, and fallback Exception → consistent JSON detail responses and 500 guard.
+- Logs printed and exceptions logged via logging.getLogger, plus prints during dev; consider standardizing on structured logging in production.
 
-- `GET /api/v1/courses` → List published courses _(filters: difficulty_level, search, pagination)_
-- `GET /api/v1/courses/{id_or_slug}` → Get single course details _(includes sections → lessons → video snippets)_
-- `GET /api/v1/courses/{id_or_slug}/sections` → List sections for a course
-- `GET /api/v1/courses/{id_or_slug}/lessons` → List all lessons (optionally filter by section)
-- `GET /api/v1/lessons/{lesson_id}` → Get single lesson content with videos
+## Database and migrations
 
-**Admin (JWT: role=ADMIN):**
+- Engine: asyncpg, create_async_engine with pool_pre_ping, pool sizing, and async sessionmaker.
+- Alembic async env with create_async_engine and run_sync to apply migrations; compare_type and compare_server_default enabled for accurate diffs.
+- Revisions add media table with constraints, change courses/projects to 1:1 media relationship, and restructure project_details.
+- Startup seeding: init_db ensures FIRST_SUPERUSER created when env vars present with a hashed password.
 
-- `POST /api/v1/courses` → Create a new course
-- `PUT /api/v1/courses/{id_or_slug}` → Update course details
-- `DELETE /api/v1/courses/{id_or_slug}` → Delete course _(soft delete optional)_
-- `PATCH /api/v1/courses/{id_or_slug}/publish` → Publish/unpublish a course
+## Media pipeline
 
-- `POST /api/v1/sections` → Create a section
-- `PUT /api/v1/sections/{section_id}` → Update a section
-- `DELETE /api/v1/sections/{section_id}` → Delete a section
+- Validates MIME types for image/video on upload.
+- Automatically picks upload_large for big videos (>100MB) with configured chunk_size; otherwise uses upload().
+- Enforces domain rules server-side: images cannot have duration_ms; unique public_id; soft-delete and restore supported.
+- Delete flow: Cloudinary destroy followed by DB delete; error transparency for upstream failures.
 
-- `POST /api/v1/lessons` → Create a lesson
-- `PUT /api/v1/lessons/{lesson_id}` → Update lesson content
-- `DELETE /api/v1/lessons/{lesson_id}` → Delete lesson
+## AI content pipeline
 
-- `POST /api/v1/video-snippets` → Add a video snippet to a lesson
-- `PUT /api/v1/video-snippets/{video_id}` → Update video snippet metadata
-- `DELETE /api/v1/video-snippets/{video_id}` → Delete snippet
+- services/ai_handler: Fetches detailed course with sections/lessons and instructor/image.
+- utils/prompts: Builds a scoped prompt by lesson_id; explicitly excludes out-of-scope lessons and returns strict Markdown-only format instructions (~900–1400 words).
+- utils/gemini_service: Uses google-genai client with async pathway when available; returns plain text.
+- API: update_lesson endpoint handles orchestration and persists content on success, with basic error wrapping.
 
----
+## Error handling and validation notes
 
-### **Projects & Portfolio**
+- Pydantic schemas use Field constraints; create/update schemas are separate from read types; read types include nested MediaWithUrl and Instructor details where applicable.
+- Services use a generic CRUD base with typed generics and error handling for IntegrityError and SQLAlchemyError including in bulk create, mapping to 409/500 as needed.
+- Some minor code-style issues spotted (e.g., stray prints, partial ellipses in a few modules due to snippet boundaries) should be cleaned before production.
 
-**Public:**
+## Local development
 
-- `GET /api/v1/projects` → List published projects _(filters: project_type, search, featured)_
-- `GET /api/v1/projects/{id_or_slug}` → Project details _(includes markdown content rendered to HTML)_
+- Requirements: Python 3.13, PostgreSQL, Cloudinary credentials, Gemini API key.
+- Install: pip install -r requirements.txt.
+- Environment: create .env with DATABASE_URL and JWT, Cloudinary, Gemini keys.
+- Run migrations: alembic upgrade head; if no alembic_version table present, stamp head then upgrade.
+- Start server: uvicorn app.main:app --host 0.0.0.0 --port 8000 (note docs served at "/").
 
-**Admin (JWT: role=ADMIN):**
+## Docker
 
-- `POST /api/v1/projects` → Create project metadata
-- `PUT /api/v1/projects/{id_or_slug}` → Update project metadata
-- `DELETE /api/v1/projects/{id_or_slug}` → Delete project
-- `PATCH /api/v1/projects/{id_or_slug}/publish` → Publish/unpublish
+- Build: docker build -t ahc-backend:<version> ..
+- Run: docker run -d --name ahc-backend -p 8000:8000 --env-file .env ahc-backend:<version>.
+- Private deployment scripts:
+  - docker_build_deploy_private.sh: builds image, replaces container, saves image to tar, scps to remote, loads, runs Alembic in a transient container, rotates old image, and starts new container.
+  - docker_build_deploy_private_compressed.sh: same flow but saves compressed tar.gz using pigz, and uses ahc.env remotely for container env.
+- GitHub release script github_release.sh: computes SHA256 for the tar.gz artifact and uploads with gh release upload—auto-creates release if missing.
 
-- `POST /api/v1/project-details/{project_id}` → Add/update markdown content
-- `PUT /api/v1/project-details/{project_id}` → Update markdown content
-- `DELETE /api/v1/project-details/{project_id}` → Delete
+## Configuration checklist
 
----
+- Set FIRST_SUPERUSER and FIRST_SUPERUSER_PASSWORD to auto-seed admin on first startup.
+- Ensure SECRET_KEY and token expiry values are set; ACCESS_TOKEN_EXPIRE_MINUTES and REFRESH_TOKEN_EXPIRE_MINUTES control session policy.
+- Provide CLOUDINARY_URL (or unify cloudinary.config usage) and GEMINI_API_KEY.
+- BACKEND_CORS_ORIGINS should include admin dashboard/frontend origins; supports CSV or JSON list string.
 
-### **User & Auth (Admin Management Only)**
+## Architecture and flow
 
-**Admin:**
+- Request lifecycle: Request → dependency graph (DB session, token extraction, role guard) → router handler → service layer (CRUD) → DB; errors mapped to consistent JSON.
+- Data access: Typed CRUDBase with list/get/create/update/delete; complex reads composed via selectinload/joinedload where needed.
+- Auth: OAuth2 form login returns access token; refresh via cookie; role guard validates token claims and user existence.
+- Media: HTTP upload → Cloudinary → DB write with constraints; retrieval public; updates/deletes guarded for ADMIN.
+- AI: Scoped prompt generation ensures lesson-specific content; persisted on success to the lesson content field.
 
-- `POST /api/v1/auth/login` → Admin login, returns JWT
-- `POST /api/v1/users` → Create admin/moderator user
-- `GET /api/v1/users` → List users _(optional)_
-- `GET /api/v1/users/{user_id}` → Get user details
-- `PUT /api/v1/users/{user_id}` → Update user details or role
-- `DELETE /api/v1/users/{user_id}` → Delete a user
+## Known gaps and recommendations
 
-### DOCKER FILES CHECKSUM ( SHA256 )
+- Align cloudinary.config to be fully driven by environment variables (CLOUDINARY_URL) for production safety; remove hardcoded credentials.
+- Consider setting secure, HttpOnly, SameSite, and domain attributes for refresh token cookie in production.
+- Cleanup stray prints and enable structured logging; possibly integrate loguru already present in requirements.
+- Add search, filtering, and pagination for public lists (courses/projects) as per README ideas; current implementation has a subset.
+- Add 422 validation responses consistently for list filters and strengthen error messages where masked.
 
-- build hash for 1.2.5 => 0be36798dc0000ecaa540ba7ea1fb010c9f58e01f29495ac8d7c8e6d9a573317
+## Running tests
 
-- base image hash for 1.2.5 => N/A
-
-- build hash for 1.2.6 => ff77cedfd1ca9fa3f14e545bd6bd02c2c322f810bf5d1baf68fc5e1c90b96d2e
-
-- base image hash for 1.2.6 => 2369e04b10806f5d8aeeb70ecdbd68d24608b5d201229e3f380a69e9fcb4c9cd
-
-### Checking Digest
-
-- if used hub
-  `docker images --digests`
-
-- the running containers
-    `docker inspect -f '{{.Image}}' <container_id>`
+- pytest and pytest-asyncio included in requirements; test modules under tests/ to validate models, services, and endpoints it yet to be added!.

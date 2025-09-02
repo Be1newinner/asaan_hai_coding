@@ -9,7 +9,7 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from app.models.media import Media
+    from app.models.media import Media, ProjectMedias
 
 
 class Project(BaseModel):
@@ -31,12 +31,22 @@ class Project(BaseModel):
     is_published: Mapped[bool] = mapped_column(Boolean, default=False)
 
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), default=datetime.now
+        TIMESTAMP(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
     )
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+    # Relationships
+    gallery: Mapped[list["Media"]] = relationship(
+        back_populates="project",
+        cascade="all, delete-orphan",
+        uselist=False,
+        single_parent=True,
+        lazy="joined",
     )
 
     detail: Mapped["ProjectDetail"] = relationship(
@@ -48,4 +58,20 @@ class Project(BaseModel):
         single_parent=True,
         cascade="all, delete-orphan",
         lazy="joined",
+    )
+    medias: Mapped[list["ProjectMedias"]] = relationship(
+        "ProjectMedias",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        single_parent=True,
+        lazy="selectin",
+    )
+
+    gallery: Mapped[list["Media"]] = relationship(
+        "Media",
+        secondary="project_medias",
+        primaryjoin="Project.id == foreign(ProjectMedias.project_id)",
+        secondaryjoin="Media.id == foreign(ProjectMedias.image_id)",
+        viewonly=True,
+        lazy="selectin",
     )

@@ -32,8 +32,6 @@ ACCEPTED_IMAGE_MIME = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 ACCEPTED_VIDEO_MIME = {"video/mp4", "video/webm", "video/quicktime"}
 
 
-
-
 @router.get(
     "/",
     response_model=MediaReadList,
@@ -244,6 +242,3 @@ async def delete_media_permanent(
     media_id: UUID, db: AsyncSession = Depends(get_async_session)
 ):
     return await media_service.delete_media_from_cloudinary_and_db(db, media_id)
-
-
-

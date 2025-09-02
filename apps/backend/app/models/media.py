@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
-
+from sqlalchemy import ForeignKey
 
 from sqlalchemy import (
     String,
@@ -38,7 +38,6 @@ class Media(BaseModel):
         PG_UUID(as_uuid=True), primary_key=True, default=uuid4
     )
 
-    # Cloudinary core identifiers
     public_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     resource_type: Mapped[MediaType] = mapped_column(
         SAEnum(MediaType, name="media_type_enum"), nullable=False
@@ -46,22 +45,18 @@ class Media(BaseModel):
     format: Mapped[Optional[str]] = mapped_column(String(32))
     version: Mapped[Optional[int]] = mapped_column(Integer)
 
-    # Delivery URLs
     secure_url: Mapped[str] = mapped_column(String(1024), nullable=False)
     url: Mapped[Optional[str]] = mapped_column(String(1024))
 
-    # MIME and size
     content_type: Mapped[Optional[str]] = mapped_column(String(100))
     bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     width: Mapped[Optional[int]] = mapped_column(Integer)
     height: Mapped[Optional[int]] = mapped_column(Integer)
     duration_ms: Mapped[Optional[int]] = mapped_column(Integer)
 
-    # Organization / naming
     folder: Mapped[Optional[str]] = mapped_column(String(255))
     original_filename: Mapped[Optional[str]] = mapped_column(String(255))
 
-    # Presentation / lifecycle
     title: Mapped[Optional[str]] = mapped_column(String(255))
     alt_text: Mapped[Optional[str]] = mapped_column(String(255))
     description: Mapped[Optional[str]] = mapped_column(Text)
@@ -86,6 +81,7 @@ class Media(BaseModel):
     )
 
     __table_args__ = (
+        # Constraints
         UniqueConstraint("public_id", name="uq_media_public_id"),
         CheckConstraint("bytes >= 0", name="bytes_non_negative"),
         CheckConstraint(
@@ -98,13 +94,111 @@ class Media(BaseModel):
         ),
     )
 
-    course: Mapped["Course | None"] = relationship(
+    # Relationships
+    # One-to-one featured/thumbnail image on Project (scalar)
+    course_thumbnail_of: Mapped[Optional["Course"]] = relationship(
         back_populates="image",
         uselist=False,
-        lazy="select",
+        lazy="selectin",
     )
-    project: Mapped["Project | None"] = relationship(
+
+    project_thumbnail_of: Mapped[Optional["Project"]] = relationship(
         back_populates="thumbnail_image",
         uselist=False,
-        lazy="select",
+        lazy="selectin",
+    )
+
+    project_media_link: Mapped[Optional["ProjectMedias"]] = relationship(
+        "ProjectMedias",
+        back_populates="media",
+        uselist=False,
+        lazy="selectin",
+    )
+    course_media_link: Mapped[Optional["CourseMedias"]] = relationship(
+        "CourseMedias",
+        back_populates="media",
+        uselist=False,
+        lazy="selectin",
+    )
+
+
+class ProjectMedias(BaseModel):
+    __tablename__ = "project_medias"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid4
+    )
+
+    image_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("media.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
+    )
+    project_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+    project: Mapped["Project"] = relationship(
+        "Project",
+        back_populates="medias",
+        lazy="joined",
+    )
+    media: Mapped["Media"] = relationship(
+        "Media",
+        back_populates="project_media_link",
+        lazy="joined",
+    )
+
+
+class CourseMedias(BaseModel):
+    __tablename__ = "course_medias"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid4
+    )
+
+    image_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("media.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
+    )
+    course_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("courses.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+    course: Mapped["Course"] = relationship(
+        "Course",
+        back_populates="medias",
+        lazy="joined",
+    )
+    media: Mapped["Media"] = relationship(
+        "Media",
+        back_populates="course_media_link",
+        lazy="joined",
     )

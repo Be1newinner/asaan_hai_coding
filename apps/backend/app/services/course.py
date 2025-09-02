@@ -11,14 +11,11 @@ from app.schemas.course import CourseCreate, CourseUpdate
 
 from uuid import UUID
 
-# from typing import Iterable, Any
-
 
 class CourseCRUD(CRUDBase[Course, CourseCreate, CourseUpdate]):
     """Domain-specific queries live here."""
 
     async def list_published(self, db: AsyncSession, *, skip: int = 0, limit: int = 20):
-        print(" ------------ DATA START ------------ ")
         stmt = (
             select(self.model)
             .options(
@@ -32,8 +29,6 @@ class CourseCRUD(CRUDBase[Course, CourseCreate, CourseUpdate]):
         )
         result = await db.execute(stmt)
         data = result.scalars().all()
-        print(data)
-        print(" ------------ DATA END ------------ ")
         return data
 
     async def getDetailed(self, db: AsyncSession, obj_id: int | UUID):

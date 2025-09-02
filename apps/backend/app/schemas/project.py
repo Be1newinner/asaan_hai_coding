@@ -33,7 +33,7 @@ class ProjectCreate(BaseModel):
     live_demo_url: str | None = Field(None, max_length=255)
     github_url: str | None = Field(None, max_length=255)
     is_published: bool = False
-    image_id: UUID | None
+    image_id: UUID | None = None
 
 
 class ProjectUpdate(BaseModel):
@@ -44,7 +44,7 @@ class ProjectUpdate(BaseModel):
     live_demo_url: str | None = Field(None, max_length=255)
     github_url: str | None = Field(None, max_length=255)
     is_published: bool | None = None
-    image_id: UUID | None
+    image_id: UUID | None = None
 
 
 class ProjectRead(ORMBase, TimestampMixin):
