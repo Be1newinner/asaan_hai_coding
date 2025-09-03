@@ -17,6 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy import Enum as SAEnum
+from sqlalchemy.sql import func
 
 from app.db.base import BaseModel
 
@@ -72,32 +73,46 @@ class Media(BaseModel):
     )
 
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), default=lambda: datetime.now(timezone.utc)
+        TIMESTAMP(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
-    # Ownership FKs (one-to-one per parent)
+    # Foreign Keys
     project_id: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=True,
-        unique=True,  # 1–1: at most one Media owned by a given Project as its thumbnail
+        unique=True,
         index=True,
     )
     course_id: Mapped[Optional[UUID]] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("courses.id", ondelete="CASCADE"),
         nullable=True,
-        unique=True,  # 1–1: at most one Media owned by a given Course as its thumbnail
+        unique=True,
         index=True,
     )
 
+    project_owner_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+    course_owner_id: Mapped[Optional[UUID]] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("courses.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+
+    # Constraints
     __table_args__ = (
-        # Constraints
         UniqueConstraint("public_id", name="uq_media_public_id"),
         CheckConstraint("bytes >= 0", name="bytes_non_negative"),
         CheckConstraint(
@@ -108,18 +123,13 @@ class Media(BaseModel):
             "(resource_type = 'image' AND duration_ms IS NULL) OR resource_type = 'video'",
             name="image_no_duration",
         ),
+        CheckConstraint(
+            "NOT (project_owner_id IS NOT NULL AND course_owner_id IS NOT NULL)",
+            name="media_at_most_one_owner",
+        ),
     )
 
-    # Relationships
-    # One-to-one backrefs (owned)
-    project_thumbnail_of: Mapped[Optional["Project"]] = relationship(
-        "Project",
-        back_populates="thumbnail_image",
-        uselist=False,
-        lazy="selectin",
-        primaryjoin="Project.id == foreign(Media.project_id)",
-        foreign_keys="[Media.project_id]",
-    )
+    # Relationships 1: 1:1 for thumbnail
     course_thumbnail_of: Mapped[Optional["Course"]] = relationship(
         "Course",
         back_populates="image",
@@ -129,92 +139,29 @@ class Media(BaseModel):
         foreign_keys="[Media.course_id]",
     )
 
-    # Association-object links for galleries (unchanged)
-    project_media_link: Mapped[Optional["ProjectMedias"]] = relationship(
-        "ProjectMedias", back_populates="media", uselist=False, lazy="selectin"
-    )
-    course_media_link: Mapped[Optional["CourseMedias"]] = relationship(
-        "CourseMedias", back_populates="media", uselist=False, lazy="selectin"
-    )
-
-
-class ProjectMedias(BaseModel):
-    __tablename__ = "project_medias"
-
-    id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True), primary_key=True, default=uuid4
-    )
-
-    image_id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True),
-        ForeignKey("media.id", ondelete="CASCADE"),
-        unique=True,
-        nullable=False,
-    )
-    project_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("projects.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
-
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
-    )
-
-    project: Mapped["Project"] = relationship(
+    # Relationships 2 :
+    project_thumbnail_of: Mapped[Optional["Project"]] = relationship(
         "Project",
-        back_populates="medias",
-        lazy="joined",
-    )
-    media: Mapped["Media"] = relationship(
-        "Media",
-        back_populates="project_media_link",
-        lazy="joined",
+        back_populates="thumbnail_image",
+        uselist=False,
+        lazy="selectin",
+        primaryjoin="foreign(Media.id) == Project.image_id",
+        foreign_keys="[Media.id]",
     )
 
-
-class CourseMedias(BaseModel):
-    __tablename__ = "course_medias"
-
-    id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True), primary_key=True, default=uuid4
+    # Relationships 3 :  for gallery ownership (1–N)
+    project_owner: Mapped[Optional["Project"]] = relationship(
+        "Project",
+        back_populates="gallery_medias",
+        lazy="selectin",
+        foreign_keys="[Media.project_owner_id]",
+        primaryjoin="Project.id == foreign(Media.project_owner_id)",
     )
-
-    image_id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True),
-        ForeignKey("media.id", ondelete="CASCADE"),
-        unique=True,
-        nullable=False,
-    )
-    course_id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True),
-        ForeignKey("courses.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
-
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
-    )
-
-    course: Mapped["Course"] = relationship(
+    # Relationships 4 :
+    course_owner: Mapped[Optional["Course"]] = relationship(
         "Course",
-        back_populates="medias",
-        lazy="joined",
-    )
-    media: Mapped["Media"] = relationship(
-        "Media",
-        back_populates="course_media_link",
-        lazy="joined",
+        back_populates="gallery_medias",
+        lazy="selectin",
+        foreign_keys="[Media.course_owner_id]",
+        primaryjoin="Course.id == foreign(Media.course_owner_id)",
     )
