@@ -3,10 +3,10 @@ from sqlalchemy import String, Text, Boolean, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, timezone
 from app.models.project_detail import ProjectDetail
-from uuid import UUID, uuid4
+from uuid import UUID
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from app.models.media import Media, ProjectMedias
@@ -52,13 +52,20 @@ class Project(BaseModel):
     detail: Mapped["ProjectDetail"] = relationship(
         back_populates="project", uselist=False, cascade="all, delete-orphan"
     )
-    thumbnail_image: Mapped["Media | None"] = relationship(
-        back_populates="project",
-        uselist=False,
-        single_parent=True,
+
+    # Owned one-to-one thumbnail
+    thumbnail_image: Mapped[Optional["Media"]] = relationship(
+        "Media",
+        back_populates="project_thumbnail_of",
+        primaryjoin="Project.id == foreign(Media.project_id)",
+        foreign_keys="[Media.project_id]",
         cascade="all, delete-orphan",
-        lazy="joined",
+        single_parent=True,
+        uselist=False,
+        lazy="selectin",
     )
+
+    # Association-object collection for gallery (unchanged)
     medias: Mapped[list["ProjectMedias"]] = relationship(
         "ProjectMedias",
         back_populates="project",
@@ -66,7 +73,6 @@ class Project(BaseModel):
         single_parent=True,
         lazy="selectin",
     )
-
     gallery: Mapped[list["Media"]] = relationship(
         "Media",
         secondary="project_medias",

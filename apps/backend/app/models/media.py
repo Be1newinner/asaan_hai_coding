@@ -80,6 +80,22 @@ class Media(BaseModel):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
+    # Ownership FKs (one-to-one per parent)
+    project_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=True,
+        unique=True,  # 1–1: at most one Media owned by a given Project as its thumbnail
+        index=True,
+    )
+    course_id: Mapped[Optional[UUID]] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("courses.id", ondelete="CASCADE"),
+        nullable=True,
+        unique=True,  # 1–1: at most one Media owned by a given Course as its thumbnail
+        index=True,
+    )
+
     __table_args__ = (
         # Constraints
         UniqueConstraint("public_id", name="uq_media_public_id"),
@@ -95,30 +111,30 @@ class Media(BaseModel):
     )
 
     # Relationships
-    # One-to-one featured/thumbnail image on Project (scalar)
-    course_thumbnail_of: Mapped[Optional["Course"]] = relationship(
-        back_populates="image",
-        uselist=False,
-        lazy="selectin",
-    )
-
+    # One-to-one backrefs (owned)
     project_thumbnail_of: Mapped[Optional["Project"]] = relationship(
+        "Project",
         back_populates="thumbnail_image",
         uselist=False,
         lazy="selectin",
+        primaryjoin="Project.id == foreign(Media.project_id)",
+        foreign_keys="[Media.project_id]",
+    )
+    course_thumbnail_of: Mapped[Optional["Course"]] = relationship(
+        "Course",
+        back_populates="image",
+        uselist=False,
+        lazy="selectin",
+        primaryjoin="Course.id == foreign(Media.course_id)",
+        foreign_keys="[Media.course_id]",
     )
 
+    # Association-object links for galleries (unchanged)
     project_media_link: Mapped[Optional["ProjectMedias"]] = relationship(
-        "ProjectMedias",
-        back_populates="media",
-        uselist=False,
-        lazy="selectin",
+        "ProjectMedias", back_populates="media", uselist=False, lazy="selectin"
     )
     course_media_link: Mapped[Optional["CourseMedias"]] = relationship(
-        "CourseMedias",
-        back_populates="media",
-        uselist=False,
-        lazy="selectin",
+        "CourseMedias", back_populates="media", uselist=False, lazy="selectin"
     )
 
 
@@ -135,8 +151,8 @@ class ProjectMedias(BaseModel):
         unique=True,
         nullable=False,
     )
-    project_id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True),
+    project_id: Mapped[int] = mapped_column(
+        Integer,
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

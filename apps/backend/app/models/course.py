@@ -1,5 +1,5 @@
 from app.db.base import BaseModel
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
@@ -56,13 +56,17 @@ class Course(BaseModel):
     instructor: Mapped["User | None"] = relationship(
         back_populates="courses", lazy="selectin"
     )
-    image: Mapped["Media | None"] = relationship(
-        back_populates="course",
-        uselist=False,
-        single_parent=True,
+    image: Mapped[Optional["Media"]] = relationship(
+        "Media",
+        back_populates="course_thumbnail_of",
+        primaryjoin="Course.id == foreign(Media.course_id)",
+        foreign_keys="[Media.course_id]",
         cascade="all, delete-orphan",
-        lazy="joined",
+        single_parent=True,
+        uselist=False,
+        lazy="selectin",
     )
+
     medias: Mapped[list["CourseMedias"]] = relationship(
         "CourseMedias",
         back_populates="course",
@@ -70,7 +74,6 @@ class Course(BaseModel):
         single_parent=True,
         lazy="selectin",
     )
-
     gallery: Mapped[list["Media"]] = relationship(
         "Media",
         secondary="course_medias",
