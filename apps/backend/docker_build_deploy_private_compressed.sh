@@ -3,7 +3,7 @@ set -e
 
 project_name=ahc-backend
 # version=1.2.6
-# current_version=1.2.5
+current_version=1.3.1
 
 increment_version() {
   local ver=$1
@@ -13,7 +13,7 @@ increment_version() {
   echo "${major}.${minor}.${patch}"
 }
 
-current_version=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${project_name}:" | awk -F: '{print $2}' | sort -V | tail -n 1)
+# current_version=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${project_name}:" | awk -F: '{print $2}' | sort -V | tail -n 1)
 
 version=$(increment_version "$current_version")
 

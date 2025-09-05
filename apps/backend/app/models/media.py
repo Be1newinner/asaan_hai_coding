@@ -85,14 +85,14 @@ class Media(BaseModel):
     # Foreign Keys
     project_id: Mapped[Optional[int]] = mapped_column(
         Integer,
-        ForeignKey("projects.id", ondelete="CASCADE"),
+        ForeignKey("projects.id", ondelete="SET NULL"),
         nullable=True,
         unique=True,
         index=True,
     )
     course_id: Mapped[Optional[UUID]] = mapped_column(
         PG_UUID(as_uuid=True),
-        ForeignKey("courses.id", ondelete="CASCADE"),
+        ForeignKey("courses.id", ondelete="SET NULL"),
         nullable=True,
         unique=True,
         index=True,
@@ -137,6 +137,7 @@ class Media(BaseModel):
         lazy="selectin",
         primaryjoin="Course.id == foreign(Media.course_id)",
         foreign_keys="[Media.course_id]",
+        viewonly=True,
     )
 
     # Relationships 2 :
@@ -147,6 +148,7 @@ class Media(BaseModel):
         lazy="selectin",
         primaryjoin="foreign(Media.id) == Project.image_id",
         foreign_keys="[Media.id]",
+        viewonly=True,
     )
 
     # Relationships 3 :  for gallery ownership (1–N)

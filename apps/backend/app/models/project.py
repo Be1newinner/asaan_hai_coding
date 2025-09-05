@@ -17,11 +17,12 @@ from sqlalchemy.sql import func
 
 from typing import TYPE_CHECKING, Optional
 
-from app.models.Junctions import project_tag_relations
-
-
 if TYPE_CHECKING:
-    from app.models.media import Media
+    from app.models.project_detail import ProjectDetail
+
+    # from app.models.media import Media
+
+from app.models.Junctions import project_tag_relations
 
 
 project_technology_relations = Table(
@@ -41,6 +42,10 @@ project_feature_relations = Table(
     Column("project_id", Integer, ForeignKey("projects.id"), primary_key=True),
     Column("feature_id", Integer, ForeignKey("project_features.id"), primary_key=True),
 )
+
+
+if TYPE_CHECKING:
+    from app.models.media import Media
 
 
 class Project(BaseModel):
@@ -74,6 +79,10 @@ class Project(BaseModel):
         nullable=False,
     )
 
+    detail: Mapped["ProjectDetail"] = relationship(
+        back_populates="project", uselist=False, cascade="all, delete-orphan"
+    )
+
     # Gallery one-to-many
     gallery_medias: Mapped[list["Media"]] = relationship(
         "Media",
@@ -87,20 +96,40 @@ class Project(BaseModel):
     # Thumbnail reverse
     thumbnail_image: Mapped[Optional["Media"]] = relationship(
         "Media",
-        primaryjoin="Project.image_id == foreign(Media.id)",
         back_populates="project_thumbnail_of",
+        primaryjoin="Project.image_id == foreign(Media.id)",
+        foreign_keys="[Project.image_id]",
         uselist=False,
         lazy="selectin",
-        foreign_keys="[Project.image_id]",
+        cascade="all, delete-orphan",
+        single_parent=True,
+        overlaps="image,course_thumbnail_of",
+    )
+
+    technologies: Mapped[list["ProjectTechnologies"]] = relationship(
+        "ProjectTechnologies",
+        secondary=project_technology_relations,
+        back_populates="projects",
+    )
+    features: Mapped[list["ProjectFeatures"]] = relationship(
+        "ProjectFeatures",
+        secondary=project_feature_relations,
+        back_populates="features",
+    )
+    tags: Mapped[list["Tag"]] = relationship(
+        "Tag",
+        secondary=project_tag_relations,
+        back_populates="projects",
     )
 
 
 class ProjectTechnologies(BaseModel):
     __tablename__ = "project_technologies"
+
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title: Mapped[str] = mapped_column(String(50), nullable=False)
     projects: Mapped[list["Project"]] = relationship(
-        "Projects",
+        "Project",
         secondary=project_technology_relations,
         back_populates="technologies",
     )
@@ -111,9 +140,9 @@ class ProjectFeatures(BaseModel):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title: Mapped[str] = mapped_column(String(50), nullable=False)
     features: Mapped[list["Project"]] = relationship(
-        "Projects",
-        secondary=project_technology_relations,
-        back_populates="technologies",
+        "Project",
+        secondary=project_feature_relations,
+        back_populates="features",
     )
 
 

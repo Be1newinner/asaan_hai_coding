@@ -3,7 +3,8 @@ from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.base import CRUDBase
-from app.models.project import Project, ProjectDetail
+from app.models.project import Project
+from app.models.project_detail import ProjectDetail
 from app.schemas.project import (
     ProjectCreate,
     ProjectUpdate,
@@ -20,6 +21,13 @@ class ProjectCRUD(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
     async def list_published(self, db: AsyncSession, *, skip: int = 0, limit: int = 20):
         stmt = (
             select(self.model)
+            .options(
+                selectinload(Project.technologies),
+                selectinload(Project.features),
+                selectinload(Project.tags),
+                selectinload(Project.gallery_medias),
+                selectinload(Project.thumbnail_image),
+            )
             .where(self.model.is_published.is_(True))
             .offset(skip)
             .limit(limit)
@@ -35,6 +43,10 @@ class ProjectCRUD(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
     async def get_detailed(self, db: AsyncSession, obj_id: int):
         forced = (
             selectinload(Project.detail),
+            selectinload(Project.technologies),
+            selectinload(Project.features),
+            selectinload(Project.tags),
+            selectinload(Project.gallery_medias),
             joinedload(self.model.thumbnail_image).load_only(
                 Media.id, Media.secure_url
             ),

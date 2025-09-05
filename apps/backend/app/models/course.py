@@ -45,7 +45,7 @@ class Course(BaseModel):
     )
     image_id: Mapped[Optional[UUID]] = mapped_column(
         PG_UUID(as_uuid=True),
-        ForeignKey("media.id", ondelete="SET NULL"),
+        ForeignKey("media.id"),
         nullable=True,
         unique=True,
     )
@@ -64,10 +64,23 @@ class Course(BaseModel):
     image: Mapped[Optional["Media"]] = relationship(
         "Media",
         back_populates="course_thumbnail_of",
-        primaryjoin="Course.id == foreign(Media.course_id)",
-        foreign_keys="[Media.course_id]",
+        primaryjoin="Course.image_id == foreign(Media.id)",
+        foreign_keys="[Course.image_id]",
+        uselist=False,
+        lazy="selectin",
         cascade="all, delete-orphan",
         single_parent=True,
-        uselist=False,
+        overlaps="thumbnail_image,project_thumbnail_of",
+    )
+
+    # Relations 3: N:1 for Instructor
+    instructor: Mapped["User | None"] = relationship(
+        back_populates="courses", lazy="selectin"
+    )
+
+    # Relations 4: 1:N for sections
+    sections: Mapped[list["Section"]] = relationship(
+        back_populates="course",
+        cascade="all, delete-orphan",
         lazy="selectin",
     )

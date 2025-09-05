@@ -57,6 +57,10 @@ class ProjectRead(ORMBase, TimestampMixin):
     github_url: str | None
     is_published: bool
     thumbnail_image: MediaWithUrl | None
+    gallery_medias: list[MediaWithUrl] = []
+    technologies: list[str] = []
+    features: list[str] = []
+    tags: list[str] = []
 
 
 class ProjectReadDetailed(ProjectRead):
