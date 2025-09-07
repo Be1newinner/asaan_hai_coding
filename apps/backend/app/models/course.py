@@ -68,9 +68,9 @@ class Course(BaseModel):
         foreign_keys="[Course.image_id]",
         uselist=False,
         lazy="selectin",
-        cascade="all, delete-orphan",
+        cascade="all",
         single_parent=True,
-        overlaps="thumbnail_image,project_thumbnail_of",
+        overlaps="thumbnail_image,project_thumbnail_of,profile_thumbnail_of",
     )
 
     # Relations 3: N:1 for Instructor

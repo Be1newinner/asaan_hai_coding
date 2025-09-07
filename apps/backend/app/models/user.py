@@ -37,7 +37,7 @@ class User(BaseModel):
     contact: Mapped[str | None] = mapped_column(String(20))
     gender: Mapped[UserGender | None]
     role: Mapped[UserRole] = mapped_column(default=UserRole.USER, nullable=False)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

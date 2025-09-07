@@ -1,4 +1,4 @@
-import api from './api';
+import api from "./api";
 import {
   ProjectCreate,
   ProjectRead,
@@ -6,28 +6,39 @@ import {
   ProjectDetailCreate,
   ProjectDetailRead,
   ProjectDetailUpdate,
-} from '../types/api';
+} from "../types/api";
 
 export const projectsService = {
-  listProjects: async (skip: number = 0, limit: number = 20) => {
-    const response = await api.get<ProjectRead[]>('/api/v1/projects', {
+  listProjects: async ({
+    skip = 0,
+    limit = 6,
+  }: {
+    skip?: number;
+    limit?: number;
+  }) => {
+    const response = await api.get<ProjectRead[]>("/api/v1/projects", {
       params: { skip, limit },
     });
     return response.data;
   },
 
   createProject: async (data: ProjectCreate) => {
-    const response = await api.post<ProjectRead>('/api/v1/projects', data);
+    const response = await api.post<ProjectRead>("/api/v1/projects", data);
     return response.data;
   },
 
   getProject: async (project_id: number) => {
-    const response = await api.get<ProjectRead>(`/api/v1/projects/${project_id}`);
+    const response = await api.get<ProjectRead>(
+      `/api/v1/projects/${project_id}`
+    );
     return response.data;
   },
 
   updateProject: async (project_id: number, data: ProjectUpdate) => {
-    const response = await api.put<ProjectRead>(`/api/v1/projects/${project_id}`, data);
+    const response = await api.put<ProjectRead>(
+      `/api/v1/projects/${project_id}`,
+      data
+    );
     return response.data;
   },
 
@@ -37,22 +48,39 @@ export const projectsService = {
   },
 
   createProjectsBulk: async (data: ProjectCreate[]) => {
-    const response = await api.post<ProjectRead[]>('/api/v1/projects/bulk', data);
+    const response = await api.post<ProjectRead[]>(
+      "/api/v1/projects/bulk",
+      data
+    );
     return response.data;
   },
 
   getProjectDetail: async (project_id: number) => {
-    const response = await api.get<ProjectDetailRead>(`/api/v1/projects/${project_id}/detail`);
+    const response = await api.get<ProjectDetailRead>(
+      `/api/v1/projects/${project_id}/detail`
+    );
     return response.data;
   },
 
-  createProjectDetail: async (project_id: number, data: ProjectDetailCreate) => {
-    const response = await api.post<ProjectDetailRead>(`/api/v1/projects/${project_id}/detail`, data);
+  createProjectDetail: async (
+    project_id: number,
+    data: ProjectDetailCreate
+  ) => {
+    const response = await api.post<ProjectDetailRead>(
+      `/api/v1/projects/${project_id}/detail`,
+      data
+    );
     return response.data;
   },
 
-  updateProjectDetail: async (project_id: number, data: ProjectDetailUpdate) => {
-    const response = await api.put<ProjectDetailRead>(`/api/v1/projects/${project_id}/detail`, data);
+  updateProjectDetail: async (
+    project_id: number,
+    data: ProjectDetailUpdate
+  ) => {
+    const response = await api.put<ProjectDetailRead>(
+      `/api/v1/projects/${project_id}/detail`,
+      data
+    );
     return response.data;
   },
 };

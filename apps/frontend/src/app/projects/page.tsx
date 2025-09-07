@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, Github, Filter } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useQuery } from "@tanstack/react-query";
+import TANSTACK_QUERY_KEYS from "@/utils/tanstack_query_keys";
+import { projectsService } from "@/services/projects";
 
 const categories = [
   "All",
@@ -101,6 +104,31 @@ const projects = [
 
 export default function ProjectsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const {
+    data: topProjects,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: [TANSTACK_QUERY_KEYS.PROJECTS_PAGE_ + 1],
+    queryFn: () => projectsService.listProjects({ limit: 3 }),
+  });
+
+  if (isLoading) {
+    return (
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900/30 text-center text-white">
+        <p>Loading projects...</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900/30 text-center text-red-500">
+        <p>Failed to load projects: {error.message}</p>
+      </section>
+    );
+  }
 
   const filteredProjects =
     selectedCategory === "All"

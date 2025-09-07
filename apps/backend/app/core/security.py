@@ -3,32 +3,40 @@ from bcrypt import gensalt, hashpw, checkpw
 from typing import Union, Optional
 from authlib.jose import JsonWebToken, errors, JWTClaims
 from datetime import timedelta, datetime, timezone
-from app.schemas.auth import TokenPayload
+from enum import Enum
+
 
 settings = get_settings()
 
 JWT_ALGORITHM = "HS256"
 
+jwt_options = {
+    "iss": "ahc-backend",
+    "aud": "ahc-admin",
+}
+
+TOKEN_TYPE = Enum("refresh-token", "access-token")
+
 jwt = JsonWebToken([JWT_ALGORITHM])
 
 
-def verify_password(plain_password: str, hashed_password: Union[str, bytes]) -> bool:
+def verify_password(plain_password: str, password: Union[str, bytes]) -> bool:
     plain_bytes: bytes
     hashed_bytes: bytes
     if isinstance(plain_password, str):
         plain_bytes = plain_password.encode("utf-8")
-    if isinstance(hashed_password, str):
-        hashed_bytes = hashed_password.encode("utf-8")
+    if isinstance(password, str):
+        hashed_bytes = password.encode("utf-8")
     else:
-        hashed_bytes = hashed_password
+        hashed_bytes = password
     return checkpw(password=plain_bytes, hashed_password=hashed_bytes)
 
 
 def get_password_hash(plain_password: str) -> str:
     password_bytes = plain_password.encode("utf-8")
     salt = gensalt(rounds=12)
-    hashed_password = hashpw(password_bytes, salt)
-    return hashed_password.decode("utf-8")
+    password = hashpw(password_bytes, salt)
+    return password.decode("utf-8")
 
 
 def create_access_token(data: dict, expire_delta: Optional[timedelta] = None) -> str:
@@ -72,14 +80,33 @@ def create_refresh_token(data: dict, expire_delta: Optional[timedelta] = None) -
     return token.decode("utf-8")
 
 
-def decode_access_token(token: str) -> Optional[JWTClaims]:
+def decode_token(token: str, type: TOKEN_TYPE) -> Optional[JWTClaims]:
     try:
-        return jwt.decode(s=token, key=settings.SECRET_KEY)
-    except errors.DecodeError:
+        claims = jwt.decode(
+            token,
+            key=settings.SECRET_KEY,
+            claims_options={
+                "exp": {"essential": True},
+                "iat": {"essential": True},
+                "nbf": {"essential": False},
+                "iss": {"essential": True, "value": jwt_options.get("iss")},
+                "aud": {"essential": True, "value": jwt_options.get("aud")},
+                "type": {"essential": True, "value": type},
+            },
+        )
+        claims.validate()
+        return claims
+    except errors.InvalidClaimError:
+        return None
+    except errors.BadSignatureError:
+        return None
+    except errors.JoseError:
         return None
 
+
+def decode_access_token(token: str) -> Optional[JWTClaims]:
+    return decode_token(token, TOKEN_TYPE["access-token"])
+
+
 def decode_refresh_token(token: str) -> Optional[JWTClaims]:
-    try:
-        return jwt.decode(s=token, key=settings.SECRET_KEY)
-    except errors.DecodeError:
-        return None
+    return decode_token(token, TOKEN_TYPE["refresh-token"])

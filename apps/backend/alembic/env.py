@@ -26,6 +26,7 @@ from app.db.base import BaseModel
 from app.models import course as _course
 from app.models import lesson as _lesson
 from app.models import media as _media
+from app.models import profile as _profile
 from app.models import project_detail as _project_detail
 from app.models import project as _project
 from app.models import section as _section

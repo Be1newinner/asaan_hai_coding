@@ -101,25 +101,28 @@ class Project(BaseModel):
         foreign_keys="[Project.image_id]",
         uselist=False,
         lazy="selectin",
-        cascade="all, delete-orphan",
+        cascade="all",
         single_parent=True,
-        overlaps="image,course_thumbnail_of",
+        overlaps="image,course_thumbnail_of,profile_thumbnail_of",
     )
 
     technologies: Mapped[list["ProjectTechnologies"]] = relationship(
         "ProjectTechnologies",
         secondary=project_technology_relations,
         back_populates="projects",
+        lazy="selectin",
     )
     features: Mapped[list["ProjectFeatures"]] = relationship(
         "ProjectFeatures",
         secondary=project_feature_relations,
         back_populates="features",
+        lazy="selectin",
     )
     tags: Mapped[list["Tag"]] = relationship(
         "Tag",
         secondary=project_tag_relations,
         back_populates="projects",
+        lazy="selectin",
     )
 
 
@@ -132,6 +135,7 @@ class ProjectTechnologies(BaseModel):
         "Project",
         secondary=project_technology_relations,
         back_populates="technologies",
+        lazy="selectin",
     )
 
 
@@ -143,6 +147,7 @@ class ProjectFeatures(BaseModel):
         "Project",
         secondary=project_feature_relations,
         back_populates="features",
+        lazy="selectin",
     )
 
 
