@@ -23,7 +23,7 @@ from app.db.base import BaseModel
 
 if TYPE_CHECKING:
     from app.models.course import Course
-    from app.models.media import Media
+    from app.models.profile import Profile
     from app.models.project import Project
 
 
@@ -100,13 +100,13 @@ class Media(BaseModel):
 
     project_owner_id: Mapped[Optional[int]] = mapped_column(
         Integer,
-        ForeignKey("projects.id", ondelete="CASCADE"),
+        ForeignKey("projects.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
     )
     course_owner_id: Mapped[Optional[UUID]] = mapped_column(
         PG_UUID(as_uuid=True),
-        ForeignKey("courses.id", ondelete="CASCADE"),
+        ForeignKey("courses.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
     )
@@ -147,6 +147,17 @@ class Media(BaseModel):
         uselist=False,
         lazy="selectin",
         primaryjoin="foreign(Media.id) == Project.image_id",
+        foreign_keys="[Media.id]",
+        viewonly=True,
+    )
+
+    # Relationships 2 :
+    profile_thumbnail_of: Mapped[Optional["Profile"]] = relationship(
+        "Profile",
+        back_populates="profile_image",
+        uselist=False,
+        lazy="selectin",
+        primaryjoin="foreign(Media.id) == Profile.profile_image_id",
         foreign_keys="[Media.id]",
         viewonly=True,
     )

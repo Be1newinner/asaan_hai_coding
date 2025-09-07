@@ -31,7 +31,7 @@ async def login(
     stmt = select(User).where(User.username == form.username)
     res = await db.execute(stmt)
     user = res.scalar_one_or_none()
-    if not user or not verify_password(form.password, user.password_hash):
+    if not user or not verify_password(form.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect credentials"
         )
@@ -96,10 +96,11 @@ async def reset_password(
     user = await user_crud.get(db, token_payload.sub)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    hashed_password = get_password_hash(form.password)
-    user_password = UserUpdateByAdmin(password=hashed_password)
-    await user_crud.update(db, user, user_password)
-    return {"message": "password reset successfully!"}
+    password = get_password_hash(form.password)
+    print(form.password, password)
+    user_password = UserUpdateByAdmin(password=password)
+    data = await user_crud.update(db, user, user_password)
+    return {"message": "password reset successfully!", "data": data}
 
 
 @router.get("/me", response_model=UserRead)
