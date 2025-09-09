@@ -37,6 +37,7 @@ async def update_profile(
     db: AsyncSession = Depends(get_async_session),
 ):
     profile_data = await profile_service.get(db, id)
+    print("PAYLOAD", profile_update.model_dump())
     if not profile_data:
         raise HTTPException(status_code=404, detail="Profile not found")
     return await profile_service.update_with_rules(db, profile_data, profile_update)

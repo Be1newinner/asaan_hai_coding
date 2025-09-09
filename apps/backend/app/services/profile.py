@@ -44,8 +44,8 @@ class ProfileService(CRUDBase[Profile, ProfileCreate, ProfileUpdate]):
         rel_names = _relationship_names(model_cls)
 
         # 1) handling many-to-many - e.g. technical_skill_ids
-        if "technical_skill_ids" in payload:
-            ids = payload.pop("technical_skill_ids") or []
+        if "skill_ids" in payload:
+            ids = payload.pop("skill_ids") or []
             rel_name = "technical_skills"
             rel_prop = _relationship_prop(model_cls, rel_name)
             target_model = rel_prop.mapper.class_
