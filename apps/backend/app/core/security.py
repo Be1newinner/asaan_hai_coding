@@ -1,6 +1,6 @@
 from app.core.config import get_settings
 from bcrypt import gensalt, hashpw, checkpw
-from typing import Union, Optional
+from typing import Union, Optional, TypedDict, Literal
 from authlib.jose import JsonWebToken, errors, JWTClaims
 from datetime import timedelta, datetime, timezone
 from enum import Enum
@@ -15,7 +15,20 @@ jwt_options = {
     "aud": "ahc-admin",
 }
 
-TOKEN_TYPE = Enum("refresh-token", "access-token")
+
+class DecodeResult(TypedDict):
+    ok: bool
+    claims: JWTClaims | None
+    reason: (
+        Literal["expired", "bad_signature", "invalid_claim", "decode_error", "other"]
+        | None
+    )
+
+
+class TokenType(str, Enum):
+    ACCESS_TOKEN = "access_token"
+    REFRESH_TOKEN = "refresh_token"
+
 
 jwt = JsonWebToken([JWT_ALGORITHM])
 
@@ -52,7 +65,7 @@ def create_access_token(data: dict, expire_delta: Optional[timedelta] = None) ->
             "iat": now,
             "iss": "ahc-backend",
             "aud": "ahc-admin",
-            "type": "access-token",
+            "type": TokenType.ACCESS_TOKEN,
         }
     )
     header = {"alg": JWT_ALGORITHM, "typ": "JWT"}
@@ -72,7 +85,7 @@ def create_refresh_token(data: dict, expire_delta: Optional[timedelta] = None) -
             "iat": now,
             "iss": "ahc-backend",
             "aud": "ahc-admin",
-            "type": "refresh-token",
+            "type": TokenType.REFRESH_TOKEN,
         }
     )
     header = {"alg": JWT_ALGORITHM, "typ": "JWT"}
@@ -80,8 +93,9 @@ def create_refresh_token(data: dict, expire_delta: Optional[timedelta] = None) -
     return token.decode("utf-8")
 
 
-def decode_token(token: str, type: TOKEN_TYPE) -> Optional[JWTClaims]:
+def decode_token(token: str, type: TokenType) -> DecodeResult:
     try:
+        # print("TYPE: ", type)
         claims = jwt.decode(
             token,
             key=settings.SECRET_KEY,
@@ -94,19 +108,24 @@ def decode_token(token: str, type: TOKEN_TYPE) -> Optional[JWTClaims]:
                 "type": {"essential": True, "value": type},
             },
         )
+        # print("claims: ", claims.validate())
         claims.validate()
-        return claims
-    except errors.InvalidClaimError:
-        return None
+        return {"ok": True, "claims": claims, "reason": None}
+    except errors.ExpiredTokenError:
+        return {"ok": False, "claims": None, "reason": "expired"}
     except errors.BadSignatureError:
-        return None
+        return {"ok": False, "claims": None, "reason": "bad_signature"}
+    except errors.InvalidClaimError:
+        return {"ok": False, "claims": None, "reason": "invalid_claim"}
+    except errors.DecodeError:
+        return {"ok": False, "claims": None, "reason": "decode_error"}
     except errors.JoseError:
-        return None
+        return {"ok": False, "claims": None, "reason": "other"}
 
 
-def decode_access_token(token: str) -> Optional[JWTClaims]:
-    return decode_token(token, TOKEN_TYPE["access-token"])
+def decode_access_token(token: str) -> DecodeResult:
+    return decode_token(token, TokenType.ACCESS_TOKEN)
 
 
-def decode_refresh_token(token: str) -> Optional[JWTClaims]:
-    return decode_token(token, TOKEN_TYPE["refresh-token"])
+def decode_refresh_token(token: str) -> DecodeResult:
+    return decode_token(token, TokenType.REFRESH_TOKEN)

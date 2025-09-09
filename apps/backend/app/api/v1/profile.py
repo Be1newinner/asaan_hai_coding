@@ -28,7 +28,9 @@ async def create_profile(
     return await profile_service.create(db, profile_create)
 
 
-@router.patch("/{id}")
+@router.patch(
+    "/{id}", response_model=ProfileRead, dependencies=[Depends(get_current_admin)]
+)
 async def update_profile(
     profile_update: ProfileUpdate,
     id: int,
@@ -37,4 +39,4 @@ async def update_profile(
     profile_data = await profile_service.get(db, id)
     if not profile_data:
         raise HTTPException(status_code=404, detail="Profile not found")
-    return await profile_service.update(db, profile_data, profile_update)
+    return await profile_service.update_with_rules(db, profile_data, profile_update)

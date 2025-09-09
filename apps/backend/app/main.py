@@ -25,6 +25,7 @@ app = FastAPI(
     version="1.3.2",
     docs_url="/",
     lifespan=lifespan,
+    debug=True,
 )
 
 log = logging.getLogger(__name__)

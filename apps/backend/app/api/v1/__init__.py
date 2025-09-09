@@ -8,6 +8,7 @@ from app.api.v1.users import router as user_router
 from app.api.v1.media import router as media_router
 from app.api.v1.ai_handler import router as AI_HANDLE_ROUTER
 from app.api.v1.profile import router as profile_router
+from app.api.v1.skills import router as skills_router
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(auth_router)
@@ -19,3 +20,4 @@ api_router.include_router(user_router)
 api_router.include_router(AI_HANDLE_ROUTER)
 api_router.include_router(media_router)
 api_router.include_router(profile_router)
+api_router.include_router(skills_router)

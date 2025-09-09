@@ -19,28 +19,59 @@ security_scheme = HTTPBearer()
 
 def require_role(allowed_roles: list[str]):
     async def _require(
-        # token: str = Depends(oauth2_scheme), # this is for username and password for token
-        token_obj: HTTPAuthorizationCredentials = Depends(
-            security_scheme
-        ),  # this is for passing bearer token directly
+        token_obj: HTTPAuthorizationCredentials = Depends(security_scheme),
         db: AsyncSession = Depends(get_async_session),
     ):
-        # print({"token": token.model_dump().get("credentials")})
-        # return token
-        
         token = token_obj.credentials
         if not token:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="missing_access_token",
+                headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
             )
-        payload = decode_access_token(token)
-        if not payload or payload.get("role") not in allowed_roles:
+
+        res = decode_access_token(token)  # structured decode result
+        if not res.get("ok", False):
+            reason = res.get("reason")
+            if reason == "expired":
+                # signal client to use refresh token
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="access_token_expired",
+                    headers={
+                        "WWW-Authenticate": 'Bearer error="invalid_token", error_description="expired"'
+                    },
+                )
+            # other invalid token cases
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="invalid_access_token",
+                headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
             )
-        user = await user_crud.get(db, payload["sub"])
+
+        claims = res["claims"] or {}
+        role = claims.get("role")
+        if allowed_roles and role not in allowed_roles:
+            # authenticated but not allowed
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="forbidden",
+            )
+
+        user_id = claims.get("sub") or claims.get("user_id") or claims.get("claims")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="invalid_access_token",
+                headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
+            )
+
+        user = await user_crud.get(db, user_id)
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="user_not_found"
+            )
+
         return user
 
     return _require
@@ -51,29 +82,69 @@ async def extract_token(
 ) -> TokenPayload:
     token = token_obj.credentials
     if not token:
+        # Authentication error: missing credentials
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="missing_access_token",
+            headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
         )
-    payload = decode_access_token(token)
-    if not payload:
+
+    res = decode_access_token(token)
+    if not res.get("ok", False):
+        reason = res.get("reason")
+        if reason == "expired":
+            # Signal client to use refresh token
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="access_token_expired",
+                headers={
+                    "WWW-Authenticate": 'Bearer error="invalid_token", error_description="expired"'
+                },
+            )
+        # Other token problems: bad signature, invalid claims, decode errors
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="invalid_access_token",
+            headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
         )
-    return TokenPayload(**payload)
+
+    claims = res["claims"] or {}
+    return TokenPayload(**claims)
 
 
 async def extract_refresh_token(request: Request) -> TokenPayload:
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
+        # No credentials present -> 401
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="missing_refresh_token",
+            headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
         )
-    payload = decode_refresh_token(refresh_token)
-    if not payload:
+
+    res = decode_refresh_token(
+        refresh_token
+    )  # {"ok": bool, "claims": dict|None, "reason": str|None}
+    if not res.get("ok", False):
+        reason = res.get("reason")
+        if reason == "expired":
+            # Refresh token expired -> user must re-authenticate
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="refresh_token_expired",
+                headers={
+                    "WWW-Authenticate": 'Bearer error="invalid_token", error_description="expired"'
+                },
+            )
+        # Any other issue means the refresh token is invalid/tampered/claims mismatch
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="invalid_refresh_token",
+            headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
         )
-    return TokenPayload(**payload)
+
+    claims = res["claims"] or {}
+    return TokenPayload(**claims)
 
 
 get_current_admin = require_role(["ADMIN"])
