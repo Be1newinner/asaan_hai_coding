@@ -46,6 +46,55 @@ export interface UserRead {
   updated_at?: string | null;
 }
 
+export interface ProfileResponseInterface {
+  id: number;
+  full_name: string;
+  role: string;
+  description: string;
+  about_me: string;
+  availability: string;
+  created_at: string;
+  updated_at: string;
+  profile_image: ProfileImage | null;
+  support_links: SupportLink[];
+  achievements: Achievement[];
+  experiences: Experience[];
+  technical_skills: TechnicalSkill[];
+}
+
+export interface ProfileImage {
+  id: string; // UUID
+  secure_url: string;
+}
+
+export interface SupportLink {
+  id: number;
+  title: string;
+  url: string;
+  icon: string;
+}
+
+export interface Achievement {
+  id: number;
+  title: string;
+}
+
+export interface Experience {
+  id: number;
+  title: string;
+  company: string;
+  description: string;
+  from_date: string; // "YYYY-MM-DD"
+  to_date: string; // "YYYY-MM-DD"
+  responsibilities: string[];
+}
+
+export interface TechnicalSkill {
+  id: number;
+  title: string;
+  category: string;
+}
+
 export enum UserGender {
   "MALE",
   "FEMALE",

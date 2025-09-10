@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Code, Sparkles } from "lucide-react";
 import Link from "next/link";
-// import EarthCanvas from "./EarthCanvas";
 import dynamic from "next/dynamic";
 const EarthCanvas = dynamic(() => import("./EarthCanvas"), { ssr: false });
 

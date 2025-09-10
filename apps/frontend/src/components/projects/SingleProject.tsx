@@ -16,7 +16,7 @@ export default function SingleProject({ project }: { project: ProjectRead }) {
   return (
     <Card
       key={project.id}
-      className="bg-slate-900 border-slate-800 hover:border-slate-700 transition-all duration-300 group"
+      className="bg-slate-900 border-slate-800 hover:border-slate-700 transition-all duration-300 group  flex flex-col"
     >
       <div className="relative overflow-hidden rounded-t-lg">
         <Image
@@ -29,7 +29,7 @@ export default function SingleProject({ project }: { project: ProjectRead }) {
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       </div>
 
-      <CardHeader>
+      <CardHeader className="flex-auto">
         <CardTitle className="text-white group-hover:text-blue-400 transition-colors">
           {project.title}
         </CardTitle>
