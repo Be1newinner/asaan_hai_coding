@@ -8,7 +8,7 @@ from app.api.deps import get_current_admin
 from app.db.session import get_async_session
 
 router = APIRouter(
-    prefix="/users", tags=["users"], dependencies=[Depends(get_current_admin)]
+    prefix="/users", tags=["Users"], dependencies=[Depends(get_current_admin)]
 )
 
 

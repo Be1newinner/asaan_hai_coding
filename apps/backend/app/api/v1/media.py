@@ -26,7 +26,7 @@ from app.services.media import media_service, upload_to_cloudinary
 from app.api.deps import get_current_admin
 
 
-router = APIRouter(prefix="/media", tags=["media"])
+router = APIRouter(prefix="/media", tags=["Media"])
 
 ACCEPTED_IMAGE_MIME = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 ACCEPTED_VIDEO_MIME = {"video/mp4", "video/webm", "video/quicktime"}

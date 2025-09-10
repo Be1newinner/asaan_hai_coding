@@ -14,7 +14,7 @@ from app.db.session import get_async_session
 
 from typing import List
 
-router = APIRouter(prefix="/sections", tags=["sections"])
+router = APIRouter(prefix="/sections", tags=["Sections"])
 
 
 # ─── Public / shared endpoints ───────────────────────────────────

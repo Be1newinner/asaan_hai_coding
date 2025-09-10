@@ -19,7 +19,7 @@ from app.api.deps import extract_token, extract_refresh_token
 
 from app.core.config import settings
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["Authentications"])
 
 
 @router.post("/login", response_model=TokenOut)

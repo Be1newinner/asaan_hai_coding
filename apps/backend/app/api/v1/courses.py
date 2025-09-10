@@ -10,7 +10,7 @@ from uuid import UUID
 
 from typing import List
 
-router = APIRouter(prefix="/courses", tags=["courses"])
+router = APIRouter(prefix="/courses", tags=["Courses"])
 
 
 # ─── Public endpoints ────────────────────────────────────────────

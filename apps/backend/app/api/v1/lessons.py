@@ -8,7 +8,7 @@ from app.db.session import get_async_session
 
 from typing import List
 
-router = APIRouter(prefix="/lessons", tags=["lessons"])
+router = APIRouter(prefix="/lessons", tags=["Lessons"])
 
 
 # ─── Public / shared endpoints ───────────────────────────────────

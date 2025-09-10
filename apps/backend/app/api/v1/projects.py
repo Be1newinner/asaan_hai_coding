@@ -14,7 +14,7 @@ from app.services import project_crud, project_detail_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
 
-router = APIRouter(prefix="/projects", tags=["projects"])
+router = APIRouter(prefix="/projects", tags=["Projects"])
 
 
 # ─── Public endpoints ────────────────────────────────────────────
