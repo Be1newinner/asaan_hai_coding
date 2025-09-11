@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.schemas.user import UserCreate, UserUpdate, UserRead
+from app.schemas.common import ListResponse
 from app.services import user_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
@@ -12,7 +13,9 @@ router = APIRouter(
 )
 
 
-@router.put("/{user_id}", response_model=UserRead)
+@router.put(
+    "/{user_id}", response_model=UserRead, dependencies=[Depends(get_current_admin)]
+)
 async def update_user(
     user_id: int,
     data: UserUpdate,
@@ -24,7 +27,9 @@ async def update_user(
     return await user_crud.update(db, user, data)
 
 
-@router.get("", response_model=list[UserRead])
+@router.get(
+    "", response_model=ListResponse[UserRead], dependencies=[Depends(get_current_admin)]
+)
 async def list_users(
     skip: int = 0,
     limit: int = 50,
@@ -41,18 +46,20 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_async_session)):
     return user
 
 
-@router.post("", response_model=UserRead)
+@router.post("", response_model=UserRead, dependencies=[Depends(get_current_admin)])
 async def create_user(data: UserCreate, db: AsyncSession = Depends(get_async_session)):
     return await user_crud.create(db, data)
 
 
-@router.post("", response_model=List[UserRead])
+@router.post(
+    "", response_model=List[UserRead], dependencies=[Depends(get_current_admin)]
+)
 async def create_user_bulk(
     data_list: List[UserCreate], db: AsyncSession = Depends(get_async_session)
 ):
     return await user_crud.create_bulk(db, data_list)
 
 
-@router.delete("/{user_id}", status_code=204)
+@router.delete("/{user_id}", status_code=204, dependencies=[Depends(get_current_admin)])
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_async_session)):
     await user_crud.delete(db, user_id)

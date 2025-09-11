@@ -8,19 +8,20 @@ from typing import (
     cast,
     Final,
     Any,
-    Sequence,
     Iterable,
 )
 from uuid import UUID
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, func, and_, true, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Mapped, Load
 from sqlalchemy.sql import ColumnElement
 from fastapi import HTTPException, status
-
+from app.db.base import BaseModel
 from pydantic import BaseModel
+
+from sqlalchemy import and_, select, func
 
 
 class HasId(Protocol):
@@ -32,6 +33,36 @@ CreateT = TypeVar("CreateT", bound=BaseModel)
 UpdateT = TypeVar("UpdateT", bound=BaseModel)
 
 
+def _build_predicates(model, kv: dict[str, Any]):
+    preds = []
+    for k, v in kv.items():
+        if not hasattr(model, k):
+            continue
+        col = getattr(model, k)
+
+        if v is None:
+            preds.append(col.is_(None))
+            continue
+
+        if isinstance(v, (list, tuple, set)):
+            values = list(v)
+            if not values:
+                continue
+            non_null = [x for x in values if x is not None]
+            has_null = any(x is None for x in values)
+            parts = []
+            if non_null:
+                parts.append(col.in_(non_null))
+            if has_null:
+                parts.append(col.is_(None))
+            if parts:
+                preds.append(or_(*parts))
+            continue
+
+        preds.append(col == v)
+    return preds
+
+
 class CRUDBase(Generic[ModelT, CreateT, UpdateT]):
     def __init__(self, model: Type[ModelT]):
         self.model = model
@@ -41,11 +72,43 @@ class CRUDBase(Generic[ModelT, CreateT, UpdateT]):
         db: AsyncSession,
         *,
         skip: int = 0,
-        limit: int = 100,
-    ) -> Sequence[ModelT]:
-        stmt = select(self.model).offset(skip).limit(limit)
+        limit: int = 1001,
+        projection: list[str] | None = None,
+        filter_by_key_value: dict[str, Any] | None = None,
+        options: Iterable[Any] = (),
+    ):
+        predicates = _build_predicates(self.model, filter_by_key_value or {})
+        if projection:
+            cols = [getattr(self.model, name) for name in projection]
+            stmt = select(*cols)
+        else:
+            stmt = select(self.model)
+
+        if predicates:
+            stmt = stmt.where(and_(*predicates))
+
+        if options:
+            stmt = stmt.options(*options)
+
+        stmt = stmt.offset(skip).limit(limit)
+
         result = await db.execute(stmt)
-        return result.scalars().all()
+        if projection:
+            rows = result.all()
+            items = [dict(zip(projection, row)) for row in rows]
+        else:
+            items = result.scalars().all()
+
+        # Count with the same filter
+        base_count = select(self.model)
+        if predicates:
+            base_count = base_count.where(and_(*predicates))
+        count_stmt = select(func.count()).select_from(
+            base_count.order_by(None).subquery()
+        )
+        total = await db.scalar(count_stmt)
+
+        return {"items": items, "total": total, "skip": skip, "limit": limit}
 
     async def get(
         self,

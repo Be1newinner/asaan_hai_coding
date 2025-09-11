@@ -36,10 +36,6 @@ class LeadRead(BaseModel):
     updated_at: datetime
 
 
-class LeadListItem(LeadRead):
-    pass
-
-
 class LeadUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.lesson import LessonCreate, LessonUpdate, LessonRead, LessonReadBase
+from app.schemas.common import ListResponse
 from app.services import lesson_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
@@ -12,16 +13,23 @@ router = APIRouter(prefix="/lessons", tags=["Lessons"])
 
 
 # ─── Public / shared endpoints ───────────────────────────────────
-@router.get("", response_model=list[LessonReadBase])
+@router.get("", response_model=ListResponse[LessonReadBase])
 async def list_lessons(
     section_id: int = Query(..., description="Filter by parent section"),
     db: AsyncSession = Depends(get_async_session),
 ):
-    return (
-        await lesson_crud.list(db, skip=0, limit=500)
-        if section_id is None
-        else [l for l in await lesson_crud.list(db) if l.section_id == section_id]
+    if not section_id:
+        raise HTTPException(400, "Section id not found!")
+    result = await lesson_crud.list(
+        db,
+        skip=0,
+        limit=500,
+        projection=["id", "title", "section_id", "lesson_order"],
+        filter_by_key_value={"section_id": section_id},
     )
+    return result
+
+    # return [l for l in await lesson_crud.list(db) if l.section_id == section_id]
 
 
 @router.get("/{lesson_id}", response_model=LessonRead)

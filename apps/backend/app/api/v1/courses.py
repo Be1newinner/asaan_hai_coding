@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 from app.schemas.course import CourseCreate, CourseUpdate, CourseRead, CourseReadBase
+from app.schemas.common import ListResponse
 from app.services import course_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
@@ -14,7 +15,7 @@ router = APIRouter(prefix="/courses", tags=["Courses"])
 
 
 # ─── Public endpoints ────────────────────────────────────────────
-@router.get("", response_model=list[CourseReadBase])
+@router.get("", response_model=ListResponse[CourseReadBase])
 async def list_courses(
     skip: int = 0, limit: int = 20, db: AsyncSession = Depends(get_async_session)
 ):

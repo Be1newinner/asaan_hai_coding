@@ -11,6 +11,7 @@ from app.schemas.project import (
     ProjectDetailCreate,
     ProjectDetailUpdate,
 )
+from typing import Iterable, Any
 
 from app.models.media import Media
 
@@ -18,27 +19,31 @@ from app.models.media import Media
 class ProjectCRUD(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
     """Project-level helpers (publish filter, etc.)."""
 
-    async def list_published(self, db: AsyncSession, *, skip: int = 0, limit: int = 20):
-        stmt = (
-            select(self.model)
-            .options(
+    async def list_published(
+        self,
+        db: AsyncSession,
+        skip: int = 0,
+        limit: int = 1001,
+        projection: list[str] | None = None,
+        filter_by_key_value: dict[str, Any] | None = None,
+        options: Iterable[Any] = (),
+    ):
+        mapping = {**(filter_by_key_value or {}), "is_published": True}
+        return await super().list(
+            db,
+            skip=skip,
+            limit=limit,
+            projection=projection,
+            filter_by_key_value=mapping,
+            options=(
                 selectinload(Project.technologies),
                 selectinload(Project.features),
                 selectinload(Project.tags),
                 selectinload(Project.gallery_medias),
                 selectinload(Project.thumbnail_image),
-            )
-            .where(self.model.is_published.is_(True))
-            .offset(skip)
-            .limit(limit)
-            # .options(
-            #     joinedload(self.model.thumbnail_image).load_only(
-            #         Media.id, Media.secure_url
-            #     ),
-            # )
+                *options,
+            ),
         )
-        res = await db.execute(stmt)
-        return res.scalars().all()
 
     async def get_detailed(self, db: AsyncSession, obj_id: int):
         forced = (

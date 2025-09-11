@@ -8,6 +8,7 @@ from app.schemas.section import (
     SectionRead,
     SectionReadBase,
 )
+from app.schemas.common import ListResponse
 from app.services import section_crud
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
@@ -18,15 +19,19 @@ router = APIRouter(prefix="/sections", tags=["Sections"])
 
 
 # ─── Public / shared endpoints ───────────────────────────────────
-@router.get("", response_model=list[SectionReadBase])
+@router.get("", response_model=ListResponse[SectionReadBase])
 async def list_sections(
     course_id: UUID = Query(..., description="Filter by parent course"),
     db: AsyncSession = Depends(get_async_session),
+    skip: int = 0,
+    limit: int = 20,
 ):
     if course_id is None:
-        return await section_crud.list(db, skip=0, limit=500)
+        raise HTTPException(401, "Course ID is required!")
     else:
-        return [s for s in await section_crud.list(db) if s.course_id == course_id]
+        return await section_crud.list(
+            db, skip=skip, limit=limit, filter_by_key_value={"course_id": course_id}
+        )
 
 
 @router.get("/{section_id}", response_model=SectionRead)

@@ -11,6 +11,7 @@ from app.schemas.project import (
     ProjectDetailRead,
 )
 from app.services import project_crud, project_detail_crud
+from app.schemas.common import ListResponse
 from app.api.deps import get_current_admin
 from app.db.session import get_async_session
 
@@ -18,13 +19,16 @@ router = APIRouter(prefix="/projects", tags=["Projects"])
 
 
 # ─── Public endpoints ────────────────────────────────────────────
-@router.get("", response_model=list[ProjectRead])
+@router.get("", response_model=ListResponse[ProjectRead])
 async def list_projects(
     skip: int = 0,
     limit: int = 20,
     db: AsyncSession = Depends(get_async_session),
+    projection: list[str] = [],
 ):
-    return await project_crud.list_published(db, skip=skip, limit=limit)
+    return await project_crud.list_published(
+        db, skip=skip, limit=limit, projection=projection
+    )
 
 
 @router.get("/{project_id}", response_model=ProjectRead)
