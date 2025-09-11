@@ -4,13 +4,17 @@ import {
   SectionCreate,
   SectionReadBase,
   SectionUpdate,
+  ListResponse,
 } from "../types/api";
 
 export const sectionsService = {
   listSections: async (course_id: string) => {
-    const response = await api.get<SectionReadBase[]>("/api/v1/sections", {
-      params: { course_id },
-    });
+    const response = await api.get<ListResponse<SectionReadBase[]>>(
+      "/api/v1/sections",
+      {
+        params: { course_id },
+      }
+    );
     return response.data;
   },
 

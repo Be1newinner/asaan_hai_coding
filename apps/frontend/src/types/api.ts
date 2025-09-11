@@ -227,6 +227,13 @@ export interface ProjectRead {
   features: string[] | null;
 }
 
+export interface ListResponse<T> {
+  total: number;
+  limit: number;
+  skip: number;
+  items: T;
+}
+
 export interface ProjectUpdate {
   title?: string | null;
   description?: string | null;

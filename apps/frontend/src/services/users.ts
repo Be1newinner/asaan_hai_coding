@@ -1,9 +1,5 @@
-import api from './api';
-import {
-  UserCreate,
-  UserUpdate,
-  UserRead,
-} from '../types/api';
+import api from "./api";
+import { UserCreate, UserUpdate, UserRead, ListResponse } from "../types/api";
 
 export const usersService = {
   updateUser: async (user_id: number, data: UserUpdate) => {
@@ -22,14 +18,14 @@ export const usersService = {
   },
 
   listUsers: async (skip: number = 0, limit: number = 50) => {
-    const response = await api.get<UserRead[]>('/api/v1/users', {
+    const response = await api.get<ListResponse<UserRead[]>>("/api/v1/users", {
       params: { skip, limit },
     });
     return response.data;
   },
 
   createUserBulk: async (data: UserCreate[]) => {
-    const response = await api.post<UserRead[]>('/api/v1/users', data);
+    const response = await api.post<UserRead[]>("/api/v1/users", data);
     return response.data;
   },
 };

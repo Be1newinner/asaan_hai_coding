@@ -10,7 +10,7 @@ import { useSearchParams } from "next/navigation";
 export default function ProjectsGrid() {
   const searchParams = useSearchParams();
 
-  //   const limit = searchParams.get("limit") || 6;
+  const limit = 6;
   const page = searchParams.get("page") || 1;
 
   const {
@@ -18,12 +18,14 @@ export default function ProjectsGrid() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: [projectKeys.list({ page, limit: 6 })],
-    queryFn: () => projectsService.listProjects({ limit: 6 }),
+    queryKey: [projectKeys.list({ page, limit })],
+    queryFn: () => projectsService.listProjects({ limit }),
     gcTime: 60 * 60 * 1000,
     refetchOnWindowFocus: false,
     staleTime: 6 * 60 * 60 * 1000,
   });
+
+  const total = Number(projects?.total) / limit || 0;
 
   if (isLoading) {
     return (
@@ -43,14 +45,14 @@ export default function ProjectsGrid() {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {projects?.map((project) => (
+        {projects?.items?.map((project) => (
           <SingleProject key={project.id} project={project} />
         ))}
       </div>
 
       {/* PROJECT NOT FOUND PLACEHOLDER, I WILL UPDATE THIS LATER! */}
 
-      {projects?.length === 0 && (
+      {projects?.items?.length === 0 && (
         <div className="text-center py-20">
           <p className="text-xl text-slate-400">
             No projects found in this category.
@@ -59,7 +61,7 @@ export default function ProjectsGrid() {
       )}
 
       <PaginationDark
-        totalPages={3}
+        totalPages={total}
         currentPage={Number(page)}
         makeHref={(p) => `/projects?page=${p}`}
       />

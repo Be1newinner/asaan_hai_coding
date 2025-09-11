@@ -1,20 +1,24 @@
-import api from './api';
+import api from "./api";
 import {
   LessonCreate,
   LessonRead,
   LessonUpdate,
-} from '../types/api';
+  ListResponse,
+} from "../types/api";
 
 export const lessonsService = {
   listLessons: async (section_id: number) => {
-    const response = await api.get<LessonRead[]>('/api/v1/lessons', {
-      params: { section_id },
-    });
+    const response = await api.get<ListResponse<LessonRead[]>>(
+      "/api/v1/lessons",
+      {
+        params: { section_id },
+      }
+    );
     return response.data;
   },
 
   createLesson: async (data: LessonCreate) => {
-    const response = await api.post<LessonRead>('/api/v1/lessons', data);
+    const response = await api.post<LessonRead>("/api/v1/lessons", data);
     return response.data;
   },
 
@@ -24,7 +28,10 @@ export const lessonsService = {
   },
 
   updateLesson: async (lesson_id: number, data: LessonUpdate) => {
-    const response = await api.put<LessonRead>(`/api/v1/lessons/${lesson_id}`, data);
+    const response = await api.put<LessonRead>(
+      `/api/v1/lessons/${lesson_id}`,
+      data
+    );
     return response.data;
   },
 
@@ -34,7 +41,7 @@ export const lessonsService = {
   },
 
   createLessonsBulk: async (data: LessonCreate[]) => {
-    const response = await api.post<LessonRead[]>('/api/v1/lessons/bulk', data);
+    const response = await api.post<LessonRead[]>("/api/v1/lessons/bulk", data);
     return response.data;
   },
 };

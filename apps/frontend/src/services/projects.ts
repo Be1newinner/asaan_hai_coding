@@ -6,6 +6,7 @@ import {
   ProjectDetailCreate,
   ProjectDetailRead,
   ProjectDetailUpdate,
+  ListResponse,
 } from "../types/api";
 
 export const projectsService = {
@@ -16,9 +17,12 @@ export const projectsService = {
     skip?: number;
     limit?: number;
   }) => {
-    const response = await api.get<ProjectRead[]>("/api/v1/projects", {
-      params: { skip, limit },
-    });
+    const response = await api.get<ListResponse<ProjectRead[]>>(
+      "/api/v1/projects",
+      {
+        params: { skip, limit },
+      }
+    );
     return response.data;
   },
 

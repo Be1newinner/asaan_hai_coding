@@ -49,7 +49,7 @@ export default function TopCourses() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {courses?.map((course) => (
+          {courses?.items?.map((course) => (
             <SingleCourse course={course} key={course.id} />
           ))}
         </div>
