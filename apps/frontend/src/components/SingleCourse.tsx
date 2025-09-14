@@ -39,10 +39,10 @@ export default function SingleCourse({ course }: { course: CourseReadBase }) {
         </div>
 
         <CardHeader className="flex-auto">
-          <CardTitle className="text-white group-hover:text-purple-400 transition-colors">
+          <CardTitle className="text-white group-hover:text-purple-400 transition-colors  text-justify">
             {course.title}
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-slate-400 text-justify">
             {course.description}
           </CardDescription>
         </CardHeader>

@@ -13,7 +13,7 @@ export default function LessonContent({ content }: { content: string }) {
   );
 
   return (
-    <article className="markdown-body mx-auto bg-card p-6 rounded-xl border">
+    <article className="markdown-body mx-auto bg-card p-0 sm:p-6 rounded-xl border-0 sm:border text-justify">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkBreaks]}
         rehypePlugins={[rehypeHighlight]}
