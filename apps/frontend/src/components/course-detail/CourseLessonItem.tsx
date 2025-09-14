@@ -18,18 +18,17 @@ const CourseLessonItem: React.FC<CourseLessonItemProps> = ({ lesson }) => {
           <BookOpen className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
           <div className="flex-grow min-w-0">
             {" "}
-            <h4 className="font-medium text-base text-foreground truncate">
+            <h4 className="font-medium text-xs sm:text-base text-foreground truncate">
               {lesson.title}
             </h4>{" "}
-            {lesson.content && (
-              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                {lesson.content}
-              </p>
-            )}
           </div>
         </div>
-        <Link href={`/lessons/${lesson.id}`} passHref>
-          <Button variant="secondary" className="ml-4 flex-shrink-0">
+        <Link
+          href={`/lessons/${lesson.id}`}
+          passHref
+          className="border rounded-lg hidden sm:inline"
+        >
+          <Button variant="secondary" className="flex-shrink-0">
             View Lesson
           </Button>
         </Link>

@@ -41,7 +41,7 @@ export default function Hero() {
               size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
             >
-              <Link href="/tutorials" className="flex items-center gap-2">
+              <Link href="/courses" className="flex items-center gap-2">
                 <Code className="h-5 w-5" />
                 <span>Start Learning</span>
                 <ArrowRight className="h-5 w-5" />
@@ -59,7 +59,7 @@ export default function Hero() {
           </div>
         </div>
       </div>
-      <div className="h-full w-full max-w-125 aspect-square">
+      <div className="h-full w-full max-w-125 aspect-square hidden sm:inline">
         <EarthCanvas />
       </div>
     </section>

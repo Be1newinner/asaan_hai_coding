@@ -34,8 +34,14 @@ const LessonDetailPage: React.FC<LessonDetailPageProps> = () => {
 
   const courseTitle: string | undefined = undefined;
   const sectionTitle: string | undefined = undefined;
-  const previousLessonId: number | null = null;
-  const nextLessonId: number | null = null;
+  const previousLessonId: number | null =
+    lesson && lesson?.lesson_order > 1 ? lessonId - 1 : null;
+
+  const nextLessonId: number | null = lesson?.total
+    ? lesson?.lesson_order < lesson?.total
+      ? lessonId + 1
+      : null
+    : lessonId + 1;
 
   if (isLoading) {
     return (

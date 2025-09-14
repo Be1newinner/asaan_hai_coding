@@ -116,6 +116,7 @@ export interface LessonRead {
   title: string;
   content: string;
   lesson_order: number;
+  total: number;
 }
 
 // SECTION TYPES ==========================
